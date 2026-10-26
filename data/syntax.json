@@ -1,0 +1,1895 @@
+{
+  "drills": [
+    {
+      "id": "py01",
+      "title": "Fila: o import vem da estrutura",
+      "language": "Python",
+      "framework": "Biblioteca padrão · Python 3.11+",
+      "level": "Fundamentos",
+      "prompt": "Complete uma busca em largura. Primeiro diga: a fila contém vértices descobertos ainda não processados. Depois recupere o nome da coleção e das operações nas duas pontas.",
+      "skeleton": "from collections import {{queue}}\n\ndef reachable(graph: dict[str, list[str]], start: str) -> set[str]:\n    pending = deque([start])\n    seen = {start}\n    while pending:\n        current = pending.{{take}}()\n        for neighbor in graph.get(current, []):\n            if neighbor not in seen:\n                seen.add(neighbor)\n                pending.{{put}}(neighbor)\n    return seen\n\nassert reachable({'a': ['b'], 'b': ['a']}, 'a') == {'a', 'b'}",
+      "slots": [
+        {
+          "key": "queue",
+          "label": "Coleção para fila",
+          "answers": [
+            "deque"
+          ],
+          "hint": "Importe o tipo que permite remover à esquerda sem deslocar toda a lista."
+        },
+        {
+          "key": "take",
+          "label": "Retirar o mais antigo",
+          "answers": [
+            "popleft"
+          ],
+          "hint": "A ponta removida é a esquerda."
+        },
+        {
+          "key": "put",
+          "label": "Acrescentar no fim",
+          "answers": [
+            "append"
+          ],
+          "hint": "O novo vértice entra na direita."
+        }
+      ],
+      "reference": "from collections import deque\n\ndef reachable(graph: dict[str, list[str]], start: str) -> set[str]:\n    pending = deque([start])\n    seen = {start}\n    while pending:\n        current = pending.popleft()\n        for neighbor in graph.get(current, []):\n            if neighbor not in seen:\n                seen.add(neighbor)\n                pending.append(neighbor)\n    return seen\n\nassert reachable({'a': ['b'], 'b': ['a']}, 'a') == {'a', 'b'}",
+      "explanation": "A ordem é import → assinatura → fila/visitados → laço → retorno → teste. Marcar como visto antes de enfileirar evita inserir o mesmo vértice repetidamente. O percurso custa O(V+E) no subgrafo alcançável.",
+      "pitfalls": [
+        "Não use list.pop(0) como fila grande.",
+        "Não esqueça de registrar start em seen.",
+        "BFS não é a solução geral para caminhos de pesos diferentes."
+      ],
+      "sourceUrl": "https://docs.python.org/3/library/collections.html#collections.deque",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "py02",
+      "title": "Agrupamento: fábrica, não lista compartilhada",
+      "language": "Python",
+      "framework": "Biblioteca padrão · Python 3.11+",
+      "level": "Fundamentos",
+      "prompt": "Agrupe valores por conta. Relembre o import, a fábrica de coleção vazia e o método que acrescenta um valor.",
+      "skeleton": "from collections import {{factory_map}}\n\ndef group(rows: list[tuple[str, int]]) -> dict[str, list[int]]:\n    result: dict[str, list[int]] = defaultdict({{factory}})\n    for account, cents in rows:\n        result[account].{{add}}(cents)\n    return dict(result)\n\nassert group([('a', 10), ('b', 4), ('a', 7)]) == {'a': [10, 7], 'b': [4]}",
+      "slots": [
+        {
+          "key": "factory_map",
+          "label": "Mapa com fábrica",
+          "answers": [
+            "defaultdict"
+          ],
+          "hint": "Está em collections."
+        },
+        {
+          "key": "factory",
+          "label": "Fábrica de lista vazia",
+          "answers": [
+            "list"
+          ],
+          "hint": "Passe a função de construção, sem executá-la."
+        },
+        {
+          "key": "add",
+          "label": "Adicionar um item",
+          "answers": [
+            "append"
+          ],
+          "hint": "Um valor, não outra coleção inteira."
+        }
+      ],
+      "reference": "from collections import defaultdict\n\ndef group(rows: list[tuple[str, int]]) -> dict[str, list[int]]:\n    result: dict[str, list[int]] = defaultdict(list)\n    for account, cents in rows:\n        result[account].append(cents)\n    return dict(result)\n\nassert group([('a', 10), ('b', 4), ('a', 7)]) == {'a': [10, 7], 'b': [4]}",
+      "explanation": "defaultdict(list) cria uma lista para cada chave ausente. list é uma função; [] é uma instância. Não há import para list, dict ou tuple: são tipos nativos.",
+      "pitfalls": [
+        "defaultdict([]) não fornece uma fábrica chamável.",
+        "Não reutilize uma única lista para todas as contas.",
+        "setdefault também é válido em outra implementação; aqui o treino é desta API."
+      ],
+      "sourceUrl": "https://docs.python.org/3/library/collections.html#collections.defaultdict",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "py03",
+      "title": "Top-k: três operações que destravam o heap",
+      "language": "Python",
+      "framework": "heapq · Python 3.11+",
+      "level": "Intermediário",
+      "prompt": "Mantenha os k maiores números com um min-heap limitado. A raiz deve ser o menor valor entre os candidatos atuais.",
+      "skeleton": "from heapq import heappush, heapreplace\n\ndef top_k(values: list[int], k: int) -> list[int]:\n    if k <= 0:\n        return []\n    heap: list[int] = []\n    for value in values:\n        if len(heap) < k:\n            {{push}}(heap, value)\n        elif value > heap[0]:\n            {{replace}}(heap, value)\n    return {{sort}}(heap, reverse=True)\n\nassert top_k([3, 9, 2, 9, 4], 3) == [9, 9, 4]",
+      "slots": [
+        {
+          "key": "push",
+          "label": "Inserir mantendo heap",
+          "answers": [
+            "heappush"
+          ],
+          "hint": "A função recebe a lista e o novo valor."
+        },
+        {
+          "key": "replace",
+          "label": "Trocar a raiz e reorganizar",
+          "answers": [
+            "heapreplace"
+          ],
+          "hint": "Use somente depois de decidir que o candidato melhora o conjunto."
+        },
+        {
+          "key": "sort",
+          "label": "Ordenar a saída",
+          "answers": [
+            "sorted"
+          ],
+          "hint": "Heap não mantém a lista inteira ordenada."
+        }
+      ],
+      "reference": "from heapq import heappush, heapreplace\n\ndef top_k(values: list[int], k: int) -> list[int]:\n    if k <= 0:\n        return []\n    heap: list[int] = []\n    for value in values:\n        if len(heap) < k:\n            heappush(heap, value)\n        elif value > heap[0]:\n            heapreplace(heap, value)\n    return sorted(heap, reverse=True)\n\nassert top_k([3, 9, 2, 9, 4], 3) == [9, 9, 4]",
+      "explanation": "Para recuperar o algoritmo, escreva primeiro k<=0; depois heap vazio; em seguida preencher ou substituir a raiz. Custo O(n log k + k log k) quando 1<k<=n; memória auxiliar O(k).",
+      "pitfalls": [
+        "heap[0] é o menor, não o maior.",
+        "Substituir sem comparar pode descartar um candidato melhor.",
+        "Duas ocorrências iguais continuam sendo dois itens neste contrato."
+      ],
+      "sourceUrl": "https://docs.python.org/3/library/heapq.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "py04",
+      "title": "Decimal: texto, escala e arredondamento",
+      "language": "Python",
+      "framework": "decimal · Python 3.11+",
+      "level": "Fundamentos",
+      "prompt": "A regra didática pede arredondamento HALF_UP para duas casas. Complete os símbolos sem converter a entrada para float.",
+      "skeleton": "from decimal import {{decimal_type}}, {{rounding}}\n\namount = Decimal('12.345')\nrounded = amount.{{round_method}}(Decimal('0.01'), rounding=ROUND_HALF_UP)\nassert rounded == Decimal('12.35')",
+      "slots": [
+        {
+          "key": "decimal_type",
+          "label": "Tipo decimal",
+          "answers": [
+            "Decimal"
+          ],
+          "hint": "Construa diretamente a partir de string."
+        },
+        {
+          "key": "rounding",
+          "label": "Modo explícito",
+          "answers": [
+            "ROUND_HALF_UP"
+          ],
+          "hint": "Neste contrato, empates se afastam de zero."
+        },
+        {
+          "key": "round_method",
+          "label": "Aplicar a escala",
+          "answers": [
+            "quantize"
+          ],
+          "hint": "O argumento informa o expoente decimal desejado."
+        }
+      ],
+      "reference": "from decimal import Decimal, ROUND_HALF_UP\n\namount = Decimal('12.345')\nrounded = amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)\nassert rounded == Decimal('12.35')",
+      "explanation": "Recupere o bloco como uma unidade: from decimal import Decimal, modo; construir por texto; quantize com escala; comparar. O exemplo assume magnitude pequena dentro da precisão padrão do contexto.",
+      "pitfalls": [
+        "Decimal(12.345) começa por um float já aproximado.",
+        "HALF_UP é regra deste exercício, não regra universal financeira.",
+        "Para entradas grandes, configure precisão e valide limites."
+      ],
+      "sourceUrl": "https://docs.python.org/3/library/decimal.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "kt01",
+      "title": "Fila JVM: tipo e operações nas pontas",
+      "language": "Kotlin",
+      "framework": "Kotlin/JVM 2.x · biblioteca Java",
+      "level": "Fundamentos",
+      "prompt": "Complete uma função FIFO. O import é java.util.ArrayDeque; a variável tem tipo genérico explícito para reforçar a leitura.",
+      "skeleton": "import java.util.{{queue}}\n\nfun fifo(values: List<Int>): List<Int> {\n    val pending = ArrayDeque<Int>()\n    val result = mutableListOf<Int>()\n    for (value in values) pending.{{put}}(value)\n    while (pending.isNotEmpty()) result.add(pending.{{take}}())\n    return result\n}\n\nfun main() { check(fifo(listOf(3, 1, 2)) == listOf(3, 1, 2)) }",
+      "slots": [
+        {
+          "key": "queue",
+          "label": "Deque Java",
+          "answers": [
+            "ArrayDeque"
+          ],
+          "hint": "Classe do pacote java.util."
+        },
+        {
+          "key": "put",
+          "label": "Inserir no fim",
+          "answers": [
+            "addLast"
+          ],
+          "hint": "FIFO: entra na última posição."
+        },
+        {
+          "key": "take",
+          "label": "Retirar do início",
+          "answers": [
+            "removeFirst"
+          ],
+          "hint": "A chamada só ocorre depois de verificar que não está vazia."
+        }
+      ],
+      "reference": "import java.util.ArrayDeque\n\nfun fifo(values: List<Int>): List<Int> {\n    val pending = ArrayDeque<Int>()\n    val result = mutableListOf<Int>()\n    for (value in values) pending.addLast(value)\n    while (pending.isNotEmpty()) result.add(pending.removeFirst())\n    return result\n}\n\nfun main() { check(fifo(listOf(3, 1, 2)) == listOf(3, 1, 2)) }",
+      "explanation": "A ordem é import → função → coleções locais → alimentação → consumo → retorno → check. List, Int, listOf e mutableListOf não precisam de imports explícitos no Kotlin padrão.",
+      "pitfalls": [
+        "ArrayDeque Java não aceita null.",
+        "removeFirst em fila vazia lança exceção.",
+        "Este exemplo é local; não promete acesso concorrente seguro."
+      ],
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayDeque.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "kt02",
+      "title": "Null safety sem recorrer a !!",
+      "language": "Kotlin",
+      "framework": "Kotlin 2.x · biblioteca padrão",
+      "level": "Fundamentos",
+      "prompt": "Retorne o comprimento do nome sem espaços laterais; ausência vira zero. Complete safe call, Elvis e verificação.",
+      "skeleton": "fun nameLength(name: String?): Int = name{{safe}}trim()?.length {{fallback}} 0\n\nfun main() {\n    {{test}}(nameLength(null) == 0)\n    check(nameLength(\"  Nu  \") == 2)\n}",
+      "slots": [
+        {
+          "key": "safe",
+          "label": "Acesso seguro",
+          "answers": [
+            "?."
+          ],
+          "hint": "Só chama trim se o valor não for null."
+        },
+        {
+          "key": "fallback",
+          "label": "Valor padrão",
+          "answers": [
+            "?:"
+          ],
+          "hint": "Operador Elvis."
+        },
+        {
+          "key": "test",
+          "label": "Verificação executável",
+          "answers": [
+            "check"
+          ],
+          "hint": "Não depende de habilitar assertions da JVM."
+        }
+      ],
+      "reference": "fun nameLength(name: String?): Int = name?.trim()?.length ?: 0\n\nfun main() {\n    check(nameLength(null) == 0)\n    check(nameLength(\"  Nu  \") == 2)\n}",
+      "explanation": "String? permite null. Cada acesso a um resultado possivelmente nulo exige um caminho explícito. O compilador ajuda depois que a fronteira foi modelada; !! apenas transfere o problema para execução.",
+      "pitfalls": [
+        "Não use name!! para silenciar a dúvida.",
+        "String vazia e null são conceitos diferentes.",
+        "check serve aqui ao teste didático; validação de argumento geralmente usa require."
+      ],
+      "sourceUrl": "https://kotlinlang.org/docs/null-safety.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "kt03",
+      "title": "Data class: transforme sem alterar a origem",
+      "language": "Kotlin",
+      "framework": "Kotlin 2.x · biblioteca padrão",
+      "level": "Fundamentos",
+      "prompt": "Produza novas contas com o nome em maiúsculas. Complete a declaração de valor, a transformação e a cópia.",
+      "skeleton": "{{record}} Account(val id: String, val name: String)\n\nfun normalized(accounts: List<Account>): List<Account> =\n    accounts.{{transform}} { account -> account.{{clone}}(name = account.name.uppercase()) }\n\nfun main() {\n    val original = Account(\"a\", \"ana\")\n    check(normalized(listOf(original)) == listOf(Account(\"a\", \"ANA\")))\n    check(original.name == \"ana\")\n}",
+      "slots": [
+        {
+          "key": "record",
+          "label": "Classe de dados",
+          "answers": [
+            "data class"
+          ],
+          "hint": "Gera igualdade por propriedades e copy."
+        },
+        {
+          "key": "transform",
+          "label": "Mapear cada elemento",
+          "answers": [
+            "map"
+          ],
+          "hint": "O resultado é uma nova lista de valores transformados."
+        },
+        {
+          "key": "clone",
+          "label": "Copiar mudando uma propriedade",
+          "answers": [
+            "copy"
+          ],
+          "hint": "Argumento nomeado deixa a intenção visível."
+        }
+      ],
+      "reference": "data class Account(val id: String, val name: String)\n\nfun normalized(accounts: List<Account>): List<Account> =\n    accounts.map { account -> account.copy(name = account.name.uppercase()) }\n\nfun main() {\n    val original = Account(\"a\", \"ana\")\n    check(normalized(listOf(original)) == listOf(Account(\"a\", \"ANA\")))\n    check(original.name == \"ana\")\n}",
+      "explanation": "Não há import necessário. Leia como dados → transformação → resultado. copy é superficial; este exemplo só usa strings imutáveis e não contém coleção mutável aninhada.",
+      "pitfalls": [
+        "val não torna todo objeto referenciado imutável.",
+        "copy pode compartilhar objetos internos.",
+        "uppercase pode exigir uma regra de locale em um domínio real."
+      ],
+      "sourceUrl": "https://kotlinlang.org/docs/data-classes.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "kt04",
+      "title": "Estados selados e when exaustivo",
+      "language": "Kotlin",
+      "framework": "Kotlin 2.x · biblioteca padrão",
+      "level": "Intermediário",
+      "prompt": "Modele aprovação ou rejeição sem booleanos contraditórios. Recupere a hierarquia e a seleção por tipo.",
+      "skeleton": "{{sealed}} Outcome\ndata class Approved(val cents: Long) : Outcome\ndata class Rejected(val reason: String) : Outcome\n\nfun describe(outcome: Outcome): String = {{branch}} (outcome) {\n    {{typecheck}} Approved -> \"approved: ${outcome.cents}\"\n    is Rejected -> \"rejected: ${outcome.reason}\"\n}\n\nfun main() { check(describe(Rejected(\"limit\")) == \"rejected: limit\") }",
+      "slots": [
+        {
+          "key": "sealed",
+          "label": "Hierarquia fechada",
+          "answers": [
+            "sealed interface"
+          ],
+          "hint": "As variantes são conhecidas pelo compilador."
+        },
+        {
+          "key": "branch",
+          "label": "Expressão de seleção",
+          "answers": [
+            "when"
+          ],
+          "hint": "Cada ramo produz o valor retornado."
+        },
+        {
+          "key": "typecheck",
+          "label": "Teste de tipo",
+          "answers": [
+            "is"
+          ],
+          "hint": "Habilita smart cast dentro do ramo."
+        }
+      ],
+      "reference": "sealed interface Outcome\ndata class Approved(val cents: Long) : Outcome\ndata class Rejected(val reason: String) : Outcome\n\nfun describe(outcome: Outcome): String = when (outcome) {\n    is Approved -> \"approved: ${outcome.cents}\"\n    is Rejected -> \"rejected: ${outcome.reason}\"\n}\n\nfun main() { check(describe(Rejected(\"limit\")) == \"rejected: limit\") }",
+      "explanation": "Primeiro escreva o tipo comum, depois cada variante e só então a função. Sem else, adicionar uma variante pode mostrar todos os pontos que precisam ser tratados.",
+      "pitfalls": [
+        "Não force cast antes de testar o tipo.",
+        "JSON recebido ainda precisa ser validado.",
+        "Uma hierarquia selada local não resolve versionamento de API."
+      ],
+      "sourceUrl": "https://kotlinlang.org/docs/sealed-classes.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "clj01",
+      "title": "Namespace e alias: imports do Clojure",
+      "language": "Clojure",
+      "framework": "Clojure 1.11+ · clojure.string",
+      "level": "Fundamentos",
+      "prompt": "Separe identificadores em uma linha CSV simples, sem aspas ou escapes. Este exercício treina require e alias, não um parser CSV completo.",
+      "skeleton": "(ns drill.names\n  ({{require}} [clojure.string {{alias}} str]))\n\n(defn ids [line]\n  (mapv str/trim ({{split}} line #\",\")))\n\n(assert (= [\"a\" \"b\"] (ids \"a, b\")))",
+      "slots": [
+        {
+          "key": "require",
+          "label": "Carregar namespace",
+          "answers": [
+            ":require"
+          ],
+          "hint": "É uma cláusula da forma ns."
+        },
+        {
+          "key": "alias",
+          "label": "Dar nome curto",
+          "answers": [
+            ":as"
+          ],
+          "hint": "Vem antes do símbolo escolhido como alias."
+        },
+        {
+          "key": "split",
+          "label": "Função com namespace",
+          "answers": [
+            "str/split"
+          ],
+          "hint": "O slash separa alias e função."
+        }
+      ],
+      "reference": "(ns drill.names\n  (:require [clojure.string :as str]))\n\n(defn ids [line]\n  (mapv str/trim (str/split line #\",\")))\n\n(assert (= [\"a\" \"b\"] (ids \"a, b\")))",
+      "explanation": "No Clojure, :require carrega namespaces Clojure; :import é para classes Java. Recupere o desenho (ns ... (:require [biblioteca :as apelido])) antes de lembrar funções.",
+      "pitfalls": [
+        "Não use ponto para chamar str.split.",
+        "Vírgulas dentro de campos exigem parser CSV real.",
+        "Parênteses delimitam chamadas; colchetes delimitam o vetor de require e argumentos."
+      ],
+      "sourceUrl": "https://clojure.org/guides/learn/namespaces",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "clj02",
+      "title": "Filtrar, extrair e reduzir",
+      "language": "Clojure",
+      "framework": "Clojure 1.11+ · clojure.core",
+      "level": "Fundamentos",
+      "prompt": "Some centavos apenas dos eventos aprovados. Complete as três funções; explique por que o acumulador inicial é zero.",
+      "skeleton": "({{define}} approved-total [events]\n  ({{sum}} + 0\n    (map :cents\n      ({{select}} #(= :approved (:status %)) events))))\n\n(assert (= 17 (approved-total [{:status :approved :cents 17}\n                               {:status :rejected :cents 30}])))\n(assert (= 0 (approved-total [])))",
+      "slots": [
+        {
+          "key": "define",
+          "label": "Definir função",
+          "answers": [
+            "defn"
+          ],
+          "hint": "Nome, vetor de parâmetros e corpo."
+        },
+        {
+          "key": "sum",
+          "label": "Reduzir coleção",
+          "answers": [
+            "reduce"
+          ],
+          "hint": "Recebe função, valor inicial e coleção."
+        },
+        {
+          "key": "select",
+          "label": "Selecionar eventos",
+          "answers": [
+            "filter"
+          ],
+          "hint": "Recebe predicado e coleção."
+        }
+      ],
+      "reference": "(defn approved-total [events]\n  (reduce + 0\n    (map :cents\n      (filter #(= :approved (:status %)) events))))\n\n(assert (= 17 (approved-total [{:status :approved :cents 17}\n                               {:status :rejected :cents 30}])))\n(assert (= 0 (approved-total [])))",
+      "explanation": "Leia de dentro para fora: filter escolhe, map extrai, reduce agrega. Todas as funções usadas já pertencem a clojure.core; não existe import extra a decorar.",
+      "pitfalls": [
+        "Não confunda :approved com a string \"approved\".",
+        "Sem acumulador explícito, a regra de vazio fica escondida na função de redução.",
+        "Valide unidade e campos na fronteira; o exemplo assume eventos válidos."
+      ],
+      "sourceUrl": "https://clojure.org/guides/learn/sequences",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "clj03",
+      "title": "Atualização imutável de mapa",
+      "language": "Clojure",
+      "framework": "Clojure 1.11+ · clojure.core",
+      "level": "Fundamentos",
+      "prompt": "Atualize um saldo e acrescente status, preservando o mapa anterior. Assuma dados válidos e valor que não ultrapassa o saldo.",
+      "skeleton": "(let [before {:balance 100}\n      after (-> before\n                ({{change}} :balance - 30)\n                ({{setvalue}} :status :active))]\n  (assert (= 70 ({{read}} after :balance)))\n  (assert (= 100 (:balance before))))",
+      "slots": [
+        {
+          "key": "change",
+          "label": "Atualizar a partir do valor antigo",
+          "answers": [
+            "update"
+          ],
+          "hint": "Recebe chave, função e argumentos adicionais."
+        },
+        {
+          "key": "setvalue",
+          "label": "Associar um valor direto",
+          "answers": [
+            "assoc"
+          ],
+          "hint": "Recebe chave e novo valor."
+        },
+        {
+          "key": "read",
+          "label": "Buscar uma chave",
+          "answers": [
+            "get"
+          ],
+          "hint": "A ordem é mapa, chave e default opcional."
+        }
+      ],
+      "reference": "(let [before {:balance 100}\n      after (-> before\n                (update :balance - 30)\n                (assoc :status :active))]\n  (assert (= 70 (get after :balance)))\n  (assert (= 100 (:balance before))))",
+      "explanation": "update chama uma função sobre o valor existente; assoc substitui ou cria um valor. -> insere o resultado anterior como primeiro argumento da próxima forma.",
+      "pitfalls": [
+        "update e assoc não alteram before.",
+        "Mapa sem :balance exige tratamento; este trecho assume a chave presente.",
+        "Imutabilidade de dados não substitui uma transação de persistência."
+      ],
+      "sourceUrl": "https://clojure.org/guides/learn/hashed_colls",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "clj04",
+      "title": "Erro com dados estruturados",
+      "language": "Clojure",
+      "framework": "Clojure 1.11+ · clojure.core",
+      "level": "Intermediário",
+      "prompt": "Rejeite centavos não positivos e recupere o motivo da exceção em um teste pequeno. Complete lançar, construir exceção e capturar.",
+      "skeleton": "(defn positive [cents]\n  (if (pos? cents)\n    cents\n    ({{raise}} ({{error}} \"invalid amount\" {:reason :non-positive}))))\n\n(assert (= :non-positive\n  (try\n    (positive 0)\n    ({{capture}} clojure.lang.ExceptionInfo e\n      (:reason (ex-data e))))))",
+      "slots": [
+        {
+          "key": "raise",
+          "label": "Lançar a exceção",
+          "answers": [
+            "throw"
+          ],
+          "hint": "Não basta construir um objeto de exceção."
+        },
+        {
+          "key": "error",
+          "label": "Exceção com mapa de dados",
+          "answers": [
+            "ex-info"
+          ],
+          "hint": "Mensagem e mapa explicam a falha."
+        },
+        {
+          "key": "capture",
+          "label": "Capturar tipo esperado",
+          "answers": [
+            "catch"
+          ],
+          "hint": "Vem depois do corpo de try."
+        }
+      ],
+      "reference": "(defn positive [cents]\n  (if (pos? cents)\n    cents\n    (throw (ex-info \"invalid amount\" {:reason :non-positive}))))\n\n(assert (= :non-positive\n  (try\n    (positive 0)\n    (catch clojure.lang.ExceptionInfo e\n      (:reason (ex-data e))))))",
+      "explanation": "ex-info cria uma ExceptionInfo; throw a lança; ex-data recupera seus dados. O catch é específico ao erro conhecido. Uma falha inesperada deve continuar visível.",
+      "pitfalls": [
+        "Não capture Throwable só para retornar sucesso.",
+        "Não coloque segredos no mapa de erro.",
+        "pos? pressupõe entrada numérica válida neste exemplo."
+      ],
+      "sourceUrl": "https://clojure.org/reference/special_forms#try",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "java01",
+      "title": "HashMap: import, generics e merge",
+      "language": "Java",
+      "framework": "Java 21 · java.util",
+      "level": "Fundamentos",
+      "prompt": "Conte ocorrências de palavras. Recupere o tipo concreto do mapa e a operação que acumula valores sem if duplicado.",
+      "skeleton": "import java.util.Map;\nimport java.util.{{maptype}};\nimport java.util.List;\n\npublic class Main {\n    static Map<String, Integer> counts(List<String> words) {\n        Map<String, Integer> result = new HashMap<>();\n        for (String word : words) result.{{accumulate}}(word, 1, Integer::sum);\n        return result;\n    }\n    public static void main(String[] args) {\n        if (!counts(List.of(\"a\", \"b\", \"a\")).{{compare}}(Map.of(\"a\", 2, \"b\", 1)))\n            throw new AssertionError(\"wrong counts\");\n    }\n}",
+      "slots": [
+        {
+          "key": "maptype",
+          "label": "Mapa concreto",
+          "answers": [
+            "HashMap"
+          ],
+          "hint": "Map é a interface; este é o armazenamento local."
+        },
+        {
+          "key": "accumulate",
+          "label": "Inserir ou combinar",
+          "answers": [
+            "merge"
+          ],
+          "hint": "Recebe chave, valor inicial e função de combinação."
+        },
+        {
+          "key": "compare",
+          "label": "Comparar mapas por conteúdo",
+          "answers": [
+            "equals"
+          ],
+          "hint": "== compara referências."
+        }
+      ],
+      "reference": "import java.util.Map;\nimport java.util.HashMap;\nimport java.util.List;\n\npublic class Main {\n    static Map<String, Integer> counts(List<String> words) {\n        Map<String, Integer> result = new HashMap<>();\n        for (String word : words) result.merge(word, 1, Integer::sum);\n        return result;\n    }\n    public static void main(String[] args) {\n        if (!counts(List.of(\"a\", \"b\", \"a\")).equals(Map.of(\"a\", 2, \"b\", 1)))\n            throw new AssertionError(\"wrong counts\");\n    }\n}",
+      "explanation": "A sequência é imports → classe → método estático → mapa → laço → retorno → main de teste. Integer::sum é uma referência de método; String pertence a java.lang e não precisa de import.",
+      "pitfalls": [
+        "HashMap não é seguro para escrita concorrente sem coordenação.",
+        "Contagem Integer pode transbordar em volumes extremos.",
+        "merge com função que retorna null remove a chave."
+      ],
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html#merge(K,V,java.util.function.BiFunction)",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "java02",
+      "title": "Deque: interface, implementação e FIFO",
+      "language": "Java",
+      "framework": "Java 21 · java.util",
+      "level": "Fundamentos",
+      "prompt": "Complete a fila sem misturar FIFO com pilha. O tipo do elemento fica entre sinais de menor e maior.",
+      "skeleton": "import java.util.Deque;\nimport java.util.{{impl}};\n\npublic class Main {\n    public static void main(String[] args) {\n        Deque<String> queue = new ArrayDeque<>();\n        queue.{{push}}(\"first\");\n        queue.addLast(\"second\");\n        String value = queue.{{pop}}();\n        if (!\"first\".equals(value)) throw new AssertionError(value);\n    }\n}",
+      "slots": [
+        {
+          "key": "impl",
+          "label": "Implementação de deque",
+          "answers": [
+            "ArrayDeque"
+          ],
+          "hint": "Coleção local da biblioteca padrão."
+        },
+        {
+          "key": "push",
+          "label": "Enfileirar no fim",
+          "answers": [
+            "addLast"
+          ],
+          "hint": "Acrescente na ponta final."
+        },
+        {
+          "key": "pop",
+          "label": "Retirar do começo",
+          "answers": [
+            "removeFirst"
+          ],
+          "hint": "Retire o item mais antigo."
+        }
+      ],
+      "reference": "import java.util.Deque;\nimport java.util.ArrayDeque;\n\npublic class Main {\n    public static void main(String[] args) {\n        Deque<String> queue = new ArrayDeque<>();\n        queue.addLast(\"first\");\n        queue.addLast(\"second\");\n        String value = queue.removeFirst();\n        if (!\"first\".equals(value)) throw new AssertionError(value);\n    }\n}",
+      "explanation": "Deque descreve a interface; ArrayDeque cria o objeto. A fila tem duas pontas. Dizer em voz alta “entra no fim, sai no início” reconstrói os nomes das operações.",
+      "pitfalls": [
+        "push/pop sobre Deque formam uma pilha.",
+        "removeFirst falha se a fila estiver vazia.",
+        "ArrayDeque não permite null."
+      ],
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayDeque.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "java03",
+      "title": "BigDecimal: igualdade e escala explícitas",
+      "language": "Java",
+      "framework": "Java 21 · java.math",
+      "level": "Fundamentos",
+      "prompt": "A taxa didática é 2,5% e o contrato manda HALF_UP em duas casas. Complete imports e a comparação numérica do resultado.",
+      "skeleton": "import java.math.{{decimal}};\nimport java.math.{{mode}};\n\npublic class Main {\n    public static void main(String[] args) {\n        BigDecimal value = new BigDecimal(\"10.00\");\n        BigDecimal fee = value.multiply(new BigDecimal(\"0.025\"))\n            .setScale(2, RoundingMode.HALF_UP);\n        if (fee.{{compare}}(new BigDecimal(\"0.25\")) != 0)\n            throw new AssertionError(fee);\n    }\n}",
+      "slots": [
+        {
+          "key": "decimal",
+          "label": "Tipo decimal",
+          "answers": [
+            "BigDecimal"
+          ],
+          "hint": "Fica em java.math."
+        },
+        {
+          "key": "mode",
+          "label": "Enum de arredondamento",
+          "answers": [
+            "RoundingMode"
+          ],
+          "hint": "O modo não deve ficar implícito."
+        },
+        {
+          "key": "compare",
+          "label": "Comparação numérica",
+          "answers": [
+            "compareTo"
+          ],
+          "hint": "Retorna zero para valores numericamente iguais."
+        }
+      ],
+      "reference": "import java.math.BigDecimal;\nimport java.math.RoundingMode;\n\npublic class Main {\n    public static void main(String[] args) {\n        BigDecimal value = new BigDecimal(\"10.00\");\n        BigDecimal fee = value.multiply(new BigDecimal(\"0.025\"))\n            .setScale(2, RoundingMode.HALF_UP);\n        if (fee.compareTo(new BigDecimal(\"0.25\")) != 0)\n            throw new AssertionError(fee);\n    }\n}",
+      "explanation": "Construa por string, calcule e só arredonde no ponto definido pelo contrato. compareTo compara valor numérico; equals também considera escala.",
+      "pitfalls": [
+        "new BigDecimal(0.1) herda a aproximação de double.",
+        "Não escolha modo de arredondamento por memória sem verificar o contrato.",
+        "Operações devolvem novos objetos; não modificam value."
+      ],
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/math/BigDecimal.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "java04",
+      "title": "Ordenação com desempate determinístico",
+      "language": "Java",
+      "framework": "Java 21 · records e Comparator",
+      "level": "Intermediário",
+      "prompt": "Ordene candidatos por prioridade crescente e depois por ID. Relembre como compor comparadores.",
+      "skeleton": "import java.util.List;\nimport java.util.ArrayList;\nimport java.util.{{comparator}};\n\npublic class Main {\n    record Candidate(String id, int priority) {}\n    public static void main(String[] args) {\n        var candidates = new ArrayList<>(List.of(\n            new Candidate(\"b\", 1), new Candidate(\"a\", 1)));\n        candidates.sort(Comparator.{{byint}}(Candidate::priority)\n            .{{then}}(Candidate::id));\n        if (!candidates.get(0).id().equals(\"a\")) throw new AssertionError();\n    }\n}",
+      "slots": [
+        {
+          "key": "comparator",
+          "label": "Tipo de comparador",
+          "answers": [
+            "Comparator"
+          ],
+          "hint": "É uma interface de java.util com fábricas estáticas."
+        },
+        {
+          "key": "byint",
+          "label": "Comparar chave int",
+          "answers": [
+            "comparingInt"
+          ],
+          "hint": "Evita subtrair prioridades manualmente."
+        },
+        {
+          "key": "then",
+          "label": "Adicionar desempate",
+          "answers": [
+            "thenComparing"
+          ],
+          "hint": "A segunda chave só decide quando a primeira empata."
+        }
+      ],
+      "reference": "import java.util.List;\nimport java.util.ArrayList;\nimport java.util.Comparator;\n\npublic class Main {\n    record Candidate(String id, int priority) {}\n    public static void main(String[] args) {\n        var candidates = new ArrayList<>(List.of(\n            new Candidate(\"b\", 1), new Candidate(\"a\", 1)));\n        candidates.sort(Comparator.comparingInt(Candidate::priority)\n            .thenComparing(Candidate::id));\n        if (!candidates.get(0).id().equals(\"a\")) throw new AssertionError();\n    }\n}",
+      "explanation": "Declare a chave principal e a regra de desempate antes de codar. List.of cria lista não modificável; ArrayList permite sort. record é suficiente para os dados pequenos deste exercício.",
+      "pitfalls": [
+        "a.priority-b.priority pode transbordar.",
+        "Sem desempate, não prometa ordem total por ID.",
+        "sort altera a lista recebida; preserve cópia se necessário."
+      ],
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Comparator.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "ts01",
+      "title": "unknown: o tipo vem depois da validação",
+      "language": "TypeScript",
+      "framework": "TypeScript 5.x · target ES2020",
+      "level": "Fundamentos",
+      "prompt": "Receba um valor desconhecido e aceite somente string não vazia após trim. Complete o tipo da fronteira, a inspeção e o lançamento de erro.",
+      "skeleton": "function accountId(value: {{input_type}}): string {\n  if ({{inspect}} value !== 'string' || value.trim() === '') {\n    {{raise}} new Error('invalid account');\n  }\n  return value.trim();\n}\n\nconsole.assert(accountId(' a ') === 'a');\nexport {};",
+      "slots": [
+        {
+          "key": "input_type",
+          "label": "Tipo seguro na fronteira",
+          "answers": [
+            "unknown"
+          ],
+          "hint": "Exige verificar antes de usar."
+        },
+        {
+          "key": "inspect",
+          "label": "Verificação de tipo em runtime",
+          "answers": [
+            "typeof"
+          ],
+          "hint": "A comparação é com a string string."
+        },
+        {
+          "key": "raise",
+          "label": "Lançar erro",
+          "answers": [
+            "throw"
+          ],
+          "hint": "Construir Error sozinho não interrompe a função."
+        }
+      ],
+      "reference": "function accountId(value: unknown): string {\n  if (typeof value !== 'string' || value.trim() === '') {\n    throw new Error('invalid account');\n  }\n  return value.trim();\n}\n\nconsole.assert(accountId(' a ') === 'a');\nexport {};",
+      "explanation": "Não há import: Error e console são fornecidos pelo ambiente, e typeof é sintaxe JavaScript. unknown preserva a obrigação de validar. O type checker consegue estreitar o tipo após o if.",
+      "pitfalls": [
+        "as string não valida dados.",
+        "any remove a proteção desejada.",
+        "Validação deste ID é propositalmente mínima; autorização é outra etapa."
+      ],
+      "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html",
+      "validation": "Exemplo executado com sucesso no Node 24.3 com remoção de tipos em 26/10/2026. Não houve type-check com tsc; a execução não prova a checagem estática."
+    },
+    {
+      "id": "ts02",
+      "title": "Async: assinatura, espera e resultado",
+      "language": "TypeScript",
+      "framework": "TypeScript 5.x · target ES2020",
+      "level": "Fundamentos",
+      "prompt": "Complete uma função assíncrona e seu teste por Promise. Não há bibliotecas externas.",
+      "skeleton": "{{async_kw}} function doubled(input: number): {{promise}}<number> {\n  const value = {{await_kw}} Promise.resolve(input);\n  return value * 2;\n}\n\ndoubled(7).then(value => console.assert(value === 14));\nexport {};",
+      "slots": [
+        {
+          "key": "async_kw",
+          "label": "Marcar função assíncrona",
+          "answers": [
+            "async"
+          ],
+          "hint": "A função passa a retornar uma Promise."
+        },
+        {
+          "key": "promise",
+          "label": "Tipo do resultado assíncrono",
+          "answers": [
+            "Promise"
+          ],
+          "hint": "Envolve o tipo number entre sinais de menor e maior."
+        },
+        {
+          "key": "await_kw",
+          "label": "Obter o valor resolvido",
+          "answers": [
+            "await"
+          ],
+          "hint": "Só é válido no contexto assíncrono apropriado."
+        }
+      ],
+      "reference": "async function doubled(input: number): Promise<number> {\n  const value = await Promise.resolve(input);\n  return value * 2;\n}\n\ndoubled(7).then(value => console.assert(value === 14));\nexport {};",
+      "explanation": "Recupere async function nome(...): Promise<T>; await espera um valor. Esse exemplo não cria paralelismo nem torna trabalho de CPU mais rápido.",
+      "pitfalls": [
+        "Esquecer await deixa a Promise, não seu valor.",
+        "Promise.all não cancela operações já iniciadas.",
+        "Falhas reais precisam de tratamento no chamador."
+      ],
+      "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/functions.html",
+      "validation": "Exemplo executado com sucesso no Node 24.3 com remoção de tipos em 26/10/2026. Não houve type-check com tsc; a execução não prova a checagem estática."
+    },
+    {
+      "id": "ts03",
+      "title": "Map sem import e dinheiro em bigint",
+      "language": "TypeScript",
+      "framework": "TypeScript 5.x · target ES2020",
+      "level": "Intermediário",
+      "prompt": "Some centavos por conta com bigint. Complete o tipo nativo, a leitura e a escrita. As entradas já são válidas.",
+      "skeleton": "function totals(rows: ReadonlyArray<readonly [string, bigint]>): Map<string, bigint> {\n  const result = new {{map_type}}<string, bigint>();\n  for (const [id, cents] of rows) {\n    result.{{write}}(id, (result.{{read}}(id) ?? 0n) + cents);\n  }\n  return result;\n}\n\nconsole.assert(totals([['a', 10n], ['a', 7n]]).get('a') === 17n);\nexport {};",
+      "slots": [
+        {
+          "key": "map_type",
+          "label": "Mapa da linguagem",
+          "answers": [
+            "Map"
+          ],
+          "hint": "É global; não precisa importar de uma biblioteca."
+        },
+        {
+          "key": "write",
+          "label": "Gravar por chave",
+          "answers": [
+            "set"
+          ],
+          "hint": "Recebe chave e valor."
+        },
+        {
+          "key": "read",
+          "label": "Ler por chave",
+          "answers": [
+            "get"
+          ],
+          "hint": "Pode retornar undefined para chave ausente."
+        }
+      ],
+      "reference": "function totals(rows: ReadonlyArray<readonly [string, bigint]>): Map<string, bigint> {\n  const result = new Map<string, bigint>();\n  for (const [id, cents] of rows) {\n    result.set(id, (result.get(id) ?? 0n) + cents);\n  }\n  return result;\n}\n\nconsole.assert(totals([['a', 10n], ['a', 7n]]).get('a') === 17n);\nexport {};",
+      "explanation": "?? fornece zero somente para ausência/null. O sufixo n representa bigint; o compilador precisa de target ES2020 ou superior. Este é um cálculo local, sem conversão para number.",
+      "pitfalls": [
+        "Não misture bigint e number em aritmética.",
+        "JSON.stringify não serializa bigint diretamente.",
+        "Map não representa uma transação distribuída."
+      ],
+      "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#less-common-primitives",
+      "validation": "Exemplo executado com sucesso no Node 24.3 com remoção de tipos em 26/10/2026. Não houve type-check com tsc; a execução não prova a checagem estática."
+    },
+    {
+      "id": "ts04",
+      "title": "União discriminada e verificação exaustiva",
+      "language": "TypeScript",
+      "framework": "TypeScript 5.x · strict",
+      "level": "Intermediário",
+      "prompt": "Trate aprovado ou rejeitado e torne variantes esquecidas visíveis ao compilador. Complete type, switch e never.",
+      "skeleton": "{{union}} Outcome =\n  | { kind: 'approved'; cents: bigint }\n  | { kind: 'rejected'; reason: string };\n\nfunction message(outcome: Outcome): string {\n  {{select}} (outcome.kind) {\n    case 'approved': return outcome.cents.toString();\n    case 'rejected': return outcome.reason;\n    default: {\n      const impossible: {{empty_type}} = outcome;\n      throw new Error(String(impossible));\n    }\n  }\n}\n\nconsole.assert(message({kind: 'rejected', reason: 'limit'}) === 'limit');\nexport {};",
+      "slots": [
+        {
+          "key": "union",
+          "label": "Declarar união",
+          "answers": [
+            "type"
+          ],
+          "hint": "É uma declaração de tipo, não uma classe em runtime."
+        },
+        {
+          "key": "select",
+          "label": "Selecionar discriminante",
+          "answers": [
+            "switch"
+          ],
+          "hint": "Cada case restringe a variante."
+        },
+        {
+          "key": "empty_type",
+          "label": "Tipo sem valores possíveis",
+          "answers": [
+            "never"
+          ],
+          "hint": "A atribuição falha se restar alguma variante não tratada."
+        }
+      ],
+      "reference": "type Outcome =\n  | { kind: 'approved'; cents: bigint }\n  | { kind: 'rejected'; reason: string };\n\nfunction message(outcome: Outcome): string {\n  switch (outcome.kind) {\n    case 'approved': return outcome.cents.toString();\n    case 'rejected': return outcome.reason;\n    default: {\n      const impossible: never = outcome;\n      throw new Error(String(impossible));\n    }\n  }\n}\n\nconsole.assert(message({kind: 'rejected', reason: 'limit'}) === 'limit');\nexport {};",
+      "explanation": "Um discriminante literal reduz estados contraditórios. O default com never serve ao compilador; o dado recebido pela rede ainda precisa de validação antes de virar Outcome.",
+      "pitfalls": [
+        "Não use cast para fabricar uma garantia inexistente.",
+        "Enums e unions locais não protegem consumidores antigos.",
+        "O projeto deve compilar com opções estritas para aproveitar o padrão."
+      ],
+      "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#exhaustiveness-checking",
+      "validation": "Exemplo executado com sucesso no Node 24.3 com remoção de tipos em 26/10/2026. Não houve type-check com tsc; a execução não prova a checagem estática."
+    },
+    {
+      "id": "sql01",
+      "title": "Ordem da consulta: filtro, grupo, filtro do grupo",
+      "language": "SQL",
+      "framework": "PostgreSQL 18",
+      "level": "Fundamentos",
+      "prompt": "Some valores positivos por conta e mantenha somente contas com total de pelo menos 15. Complete as três cláusulas; execute sem criar tabelas.",
+      "skeleton": "WITH payments(account, cents) AS (\n  VALUES ('a', 10), ('a', 7), ('b', 3), ('b', -1)\n)\nSELECT account, SUM(cents) AS total\nFROM payments\n{{filter}} cents > 0\n{{group}} account\n{{group_filter}} SUM(cents) >= 15\nORDER BY account;\n-- Resultado esperado: a | 17",
+      "slots": [
+        {
+          "key": "filter",
+          "label": "Filtrar linhas",
+          "answers": [
+            "WHERE"
+          ],
+          "hint": "Executado logicamente antes da agregação."
+        },
+        {
+          "key": "group",
+          "label": "Formar grupos",
+          "answers": [
+            "GROUP BY"
+          ],
+          "hint": "As linhas de uma mesma conta formam um grupo."
+        },
+        {
+          "key": "group_filter",
+          "label": "Filtrar grupos",
+          "answers": [
+            "HAVING"
+          ],
+          "hint": "A condição usa um resultado agregado."
+        }
+      ],
+      "reference": "WITH payments(account, cents) AS (\n  VALUES ('a', 10), ('a', 7), ('b', 3), ('b', -1)\n)\nSELECT account, SUM(cents) AS total\nFROM payments\nWHERE cents > 0\nGROUP BY account\nHAVING SUM(cents) >= 15\nORDER BY account;\n-- Resultado esperado: a | 17",
+      "explanation": "Memorize a ordem escrita SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY. Depois explique a ordem lógica: origem, filtro, grupo, filtro de grupo, projeção e ordenação.",
+      "pitfalls": [
+        "SUM em WHERE não expressa filtro de grupo.",
+        "Sem ORDER BY a ordem final não é garantida.",
+        "Na aplicação use parâmetros, não concatenação de valores externos."
+      ],
+      "sourceUrl": "https://www.postgresql.org/docs/18/sql-select.html",
+      "validation": "Revisão estática. A criação de PostgreSQL isolado para este conjunto foi impedida pela permissão de memória compartilhada do ambiente; estes snippets não foram executados nesta validação."
+    },
+    {
+      "id": "sql02",
+      "title": "LEFT JOIN e ausência que vira zero",
+      "language": "SQL",
+      "framework": "PostgreSQL 18",
+      "level": "Fundamentos",
+      "prompt": "Mostre todas as contas, inclusive a sem pagamentos. Complete o join, a condição e o fallback numérico.",
+      "skeleton": "WITH accounts(id) AS (VALUES ('a'), ('b')),\npayments(account, cents) AS (VALUES ('a', 10), ('a', 7))\nSELECT a.id, {{fallback}}(SUM(p.cents), 0) AS total\nFROM accounts a\n{{join}} payments p {{condition}} p.account = a.id\nGROUP BY a.id\nORDER BY a.id;\n-- Resultado esperado: a | 17 ; b | 0",
+      "slots": [
+        {
+          "key": "fallback",
+          "label": "Substituir NULL",
+          "answers": [
+            "COALESCE"
+          ],
+          "hint": "Escolhe o primeiro argumento não nulo."
+        },
+        {
+          "key": "join",
+          "label": "Preservar contas sem par",
+          "answers": [
+            "LEFT JOIN"
+          ],
+          "hint": "A tabela à esquerda mantém suas linhas."
+        },
+        {
+          "key": "condition",
+          "label": "Condição de relacionamento",
+          "answers": [
+            "ON"
+          ],
+          "hint": "Relaciona as chaves das duas fontes."
+        }
+      ],
+      "reference": "WITH accounts(id) AS (VALUES ('a'), ('b')),\npayments(account, cents) AS (VALUES ('a', 10), ('a', 7))\nSELECT a.id, COALESCE(SUM(p.cents), 0) AS total\nFROM accounts a\nLEFT JOIN payments p ON p.account = a.id\nGROUP BY a.id\nORDER BY a.id;\n-- Resultado esperado: a | 17 ; b | 0",
+      "explanation": "Decida primeiro qual conjunto precisa ser preservado. SUM sobre nenhuma contribuição resulta em NULL aqui; COALESCE comunica a decisão de exibir zero.",
+      "pitfalls": [
+        "Filtro em WHERE sobre a tabela direita pode eliminar linhas sem correspondência.",
+        "Join um-para-muitos pode multiplicar valores da esquerda.",
+        "COUNT(*) e COUNT(p.cents) têm comportamentos diferentes para a linha sem par."
+      ],
+      "sourceUrl": "https://www.postgresql.org/docs/18/tutorial-join.html",
+      "validation": "Revisão estática. A criação de PostgreSQL isolado para este conjunto foi impedida pela permissão de memória compartilhada do ambiente; estes snippets não foram executados nesta validação."
+    },
+    {
+      "id": "sql03",
+      "title": "Saldo acumulado com frame explícito",
+      "language": "SQL",
+      "framework": "PostgreSQL 18",
+      "level": "Intermediário",
+      "prompt": "Calcule total acumulado por conta preservando cada lançamento. Complete a janela, a partição e o frame por linha.",
+      "skeleton": "WITH entries(account, seq, cents) AS (\n  VALUES ('a', 1, 100), ('a', 2, -30), ('b', 1, 20)\n)\nSELECT account, seq, cents,\n       SUM(cents) {{window}} (\n         {{partition}} account ORDER BY seq\n         {{frame}} BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n       ) AS running_total\nFROM entries\nORDER BY account, seq;\n-- Totais esperados: a/1=100 ; a/2=70 ; b/1=20",
+      "slots": [
+        {
+          "key": "window",
+          "label": "Abrir janela",
+          "answers": [
+            "OVER"
+          ],
+          "hint": "A agregação passa a preservar as linhas."
+        },
+        {
+          "key": "partition",
+          "label": "Separar contas",
+          "answers": [
+            "PARTITION BY"
+          ],
+          "hint": "Cada conta tem seu próprio acumulado."
+        },
+        {
+          "key": "frame",
+          "label": "Frame físico de linhas",
+          "answers": [
+            "ROWS"
+          ],
+          "hint": "A ordem deste exemplo é única dentro de cada conta."
+        }
+      ],
+      "reference": "WITH entries(account, seq, cents) AS (\n  VALUES ('a', 1, 100), ('a', 2, -30), ('b', 1, 20)\n)\nSELECT account, seq, cents,\n       SUM(cents) OVER (\n         PARTITION BY account ORDER BY seq\n         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n       ) AS running_total\nFROM entries\nORDER BY account, seq;\n-- Totais esperados: a/1=100 ; a/2=70 ; b/1=20",
+      "explanation": "Escreva a ordem total antes do frame. Em dados reais, timestamp sozinho pode empatar: inclua ID estável. GROUP BY e janela resolvem problemas diferentes.",
+      "pitfalls": [
+        "Não confunda ordenar a janela com ordenar a saída.",
+        "Empates sem desempate podem tornar resultados por linha inesperados.",
+        "A consulta não decide concorrência de saques; só calcula uma visão."
+      ],
+      "sourceUrl": "https://www.postgresql.org/docs/18/tutorial-window.html",
+      "validation": "Revisão estática. A criação de PostgreSQL isolado para este conjunto foi impedida pela permissão de memória compartilhada do ambiente; estes snippets não foram executados nesta validação."
+    },
+    {
+      "id": "sql04",
+      "title": "Transação de ensaio que deixa o banco limpo",
+      "language": "SQL",
+      "framework": "PostgreSQL 18 · sessão local de treino",
+      "level": "Intermediário",
+      "prompt": "Execute apenas em banco de estudo. Abra transação, bloqueie uma linha temporária e reverta tudo no fim. O saldo intermediário esperado é 70.",
+      "skeleton": "{{begin}};\nCREATE TEMP TABLE demo_account(id text PRIMARY KEY, cents bigint CHECK(cents >= 0));\nINSERT INTO demo_account VALUES ('a', 100);\nSELECT * FROM demo_account WHERE id = 'a' {{lock}};\nUPDATE demo_account SET cents = cents - 30\nWHERE id = 'a' AND cents >= 30;\nSELECT cents FROM demo_account WHERE id = 'a';\n{{rollback}};",
+      "slots": [
+        {
+          "key": "begin",
+          "label": "Abrir transação",
+          "answers": [
+            "BEGIN",
+            "START TRANSACTION"
+          ],
+          "hint": "As operações seguintes pertencem à mesma unidade."
+        },
+        {
+          "key": "lock",
+          "label": "Bloquear linha para atualização",
+          "answers": [
+            "FOR UPDATE"
+          ],
+          "hint": "O lock dura até terminar a transação."
+        },
+        {
+          "key": "rollback",
+          "label": "Desfazer o ensaio",
+          "answers": [
+            "ROLLBACK"
+          ],
+          "hint": "Inclui a criação da tabela temporária nesta transação."
+        }
+      ],
+      "reference": "BEGIN;\nCREATE TEMP TABLE demo_account(id text PRIMARY KEY, cents bigint CHECK(cents >= 0));\nINSERT INTO demo_account VALUES ('a', 100);\nSELECT * FROM demo_account WHERE id = 'a' FOR UPDATE;\nUPDATE demo_account SET cents = cents - 30\nWHERE id = 'a' AND cents >= 30;\nSELECT cents FROM demo_account WHERE id = 'a';\nROLLBACK;",
+      "explanation": "O desenho é BEGIN → leitura/proteção → escrita → verificação → COMMIT ou ROLLBACK. Aqui ROLLBACK é intencional. A aplicação real precisa conferir linhas alteradas e tratar erro da transação inteira.",
+      "pitfalls": [
+        "Este trecho não é uma transferência completa.",
+        "Não mantenha transação aberta esperando interação humana em produção.",
+        "Locks entre múltiplas contas precisam de ordem consistente."
+      ],
+      "sourceUrl": "https://www.postgresql.org/docs/18/explicit-locking.html",
+      "validation": "Revisão estática. A criação de PostgreSQL isolado para este conjunto foi impedida pela permissão de memória compartilhada do ambiente; estes snippets não foram executados nesta validação."
+    },
+    {
+      "id": "fw01",
+      "title": "React: estado e atualização anterior",
+      "language": "TypeScript",
+      "framework": "React",
+      "level": "fundamento",
+      "prompt": "Em src/App.tsx de um projeto React 19 + TypeScript, complete o import, o hook e o atualizador funcional. O exercício treina a ordem import → componente → hook → evento → JSX.",
+      "skeleton": "import { {{hook_import}} } from 'react';\n\nexport default function App() {\n  const [count, setCount] = {{hook_call}}(0);\n  return <button onClick={() => setCount({{updater}})}>\n    Cliques: {count}\n  </button>;\n}",
+      "slots": [
+        {
+          "key": "hook_import",
+          "label": "Hook importado",
+          "answers": [
+            "useState"
+          ],
+          "hint": "O mesmo nome aparece no componente."
+        },
+        {
+          "key": "hook_call",
+          "label": "Criar estado",
+          "answers": [
+            "useState"
+          ],
+          "hint": "Chame no topo do componente, nunca em if ou loop."
+        },
+        {
+          "key": "updater",
+          "label": "Atualizar com o valor anterior",
+          "answers": [
+            "current => current + 1",
+            "(current) => current + 1"
+          ],
+          "hint": "Receba o estado anterior e devolva o seguinte."
+        }
+      ],
+      "reference": "import { useState } from 'react';\n\nexport default function App() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(current => current + 1)}>\n    Cliques: {count}\n  </button>;\n}",
+      "explanation": "Hooks ficam no topo de componentes ou de hooks próprios. O atualizador funcional evita depender de uma captura antiga quando a próxima versão depende da anterior.",
+      "pitfalls": [
+        "Não chame setCount durante a renderização deste exemplo.",
+        "Não altere um objeto de estado diretamente.",
+        "O código pressupõe configuração JSX e dependências react/react-dom."
+      ],
+      "sourceUrl": "https://react.dev/reference/react/useState",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "fw02",
+      "title": "React: efeito com limpeza de intervalo",
+      "language": "TypeScript",
+      "framework": "React",
+      "level": "intermediário",
+      "prompt": "Em um projeto React 19 + TypeScript, complete a sincronização com um timer externo. Ao desmontar, o componente deve cancelar o intervalo. Este snippet é o arquivo src/App.tsx completo.",
+      "skeleton": "import { useEffect, useState } from 'react';\n\nexport default function App() {\n  const [ticks, setTicks] = useState(0);\n  {{effect}}(() => {\n    const id = window.setInterval(() => setTicks(n => n + 1), 1000);\n    {{cleanup}} () => window.{{cancel}}(id);\n  }, []);\n  return <output aria-live=\"polite\">Segundos: {ticks}</output>;\n}",
+      "slots": [
+        {
+          "key": "effect",
+          "label": "Executar efeito",
+          "answers": [
+            "useEffect"
+          ],
+          "hint": "Não use efeito para valores que podem ser calculados no render."
+        },
+        {
+          "key": "cleanup",
+          "label": "Devolver cleanup",
+          "answers": [
+            "return"
+          ],
+          "hint": "O efeito devolve uma função, não o resultado de chamá-la."
+        },
+        {
+          "key": "cancel",
+          "label": "Cancelar intervalo",
+          "answers": [
+            "clearInterval"
+          ],
+          "hint": "Combine setInterval com seu par de limpeza."
+        }
+      ],
+      "reference": "import { useEffect, useState } from 'react';\n\nexport default function App() {\n  const [ticks, setTicks] = useState(0);\n  useEffect(() => {\n    const id = window.setInterval(() => setTicks(n => n + 1), 1000);\n    return () => window.clearInterval(id);\n  }, []);\n  return <output aria-live=\"polite\">Segundos: {ticks}</output>;\n}",
+      "explanation": "O desenho é setup → return cleanup. O atualizador funcional mantém a lista de dependências vazia válida neste caso. Strict Mode pode repetir setup/cleanup no desenvolvimento para revelar limpeza ausente.",
+      "pitfalls": [
+        "O callback de useEffect não deve ser async.",
+        "Não remova dependências reativas só para evitar reexecução.",
+        "O timer demonstra ciclo de vida, não um relógio preciso."
+      ],
+      "sourceUrl": "https://react.dev/reference/react/useEffect",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "fw03",
+      "title": "Spring: controlador HTTP e query parameter",
+      "language": "Java",
+      "framework": "Spring Web",
+      "level": "fundamento",
+      "prompt": "Arquivo src/main/java/example/PingController.java em projeto Spring Boot 3.x ou 4.x com Spring Web e Java 17+ compatível com a versão escolhida. Complete imports das anotações; a aplicação Boot deve estar no pacote example ou acima.",
+      "skeleton": "package example;\n\nimport org.springframework.web.bind.annotation.{{controller}};\nimport org.springframework.web.bind.annotation.{{mapping}};\nimport org.springframework.web.bind.annotation.{{parameter}};\nimport java.util.Map;\n\n@RestController\npublic class PingController {\n    @GetMapping(\"/ping\")\n    public Map<String, String> ping(\n            @RequestParam(name = \"name\", defaultValue = \"mundo\") String name) {\n        return Map.of(\"message\", \"Olá, \" + name);\n    }\n}",
+      "slots": [
+        {
+          "key": "controller",
+          "label": "Anotação de controlador REST",
+          "answers": [
+            "RestController"
+          ],
+          "hint": "Combina controller e resposta no corpo."
+        },
+        {
+          "key": "mapping",
+          "label": "Rota GET",
+          "answers": [
+            "GetMapping"
+          ],
+          "hint": "Especialização de RequestMapping para GET."
+        },
+        {
+          "key": "parameter",
+          "label": "Parâmetro da query string",
+          "answers": [
+            "RequestParam"
+          ],
+          "hint": "Para /ping?name=Ana; path variable é outra anotação."
+        }
+      ],
+      "reference": "package example;\n\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport java.util.Map;\n\n@RestController\npublic class PingController {\n    @GetMapping(\"/ping\")\n    public Map<String, String> ping(\n            @RequestParam(name = \"name\", defaultValue = \"mundo\") String name) {\n        return Map.of(\"message\", \"Olá, \" + name);\n    }\n}",
+      "explanation": "Reconstrua de fora para dentro: package → imports → classe anotada → método/rota → parâmetro → retorno. O nome explícito em @RequestParam evita depender de metadados de nomes de parâmetros preservados pela compilação.",
+      "pitfalls": [
+        "Não confunda RequestParam com PathVariable ou RequestBody.",
+        "O controlador não é um aplicativo Boot completo sozinho.",
+        "Validação, autenticação e política de erros exigem decisões adicionais."
+      ],
+      "sourceUrl": "https://spring.io/guides/gs/rest-service/",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "fw04",
+      "title": "JUnit Jupiter: resultado e erro esperado",
+      "language": "Java",
+      "framework": "JUnit Jupiter",
+      "level": "fundamento",
+      "prompt": "Arquivo AmountTest.java no diretório de testes de projeto Java 17+ com JUnit Jupiter 6.1.x configurado no runner. Complete import da anotação e asserções estáticas. Compatível com APIs usuais do Jupiter 5 também.",
+      "skeleton": "import org.junit.jupiter.api.{{test}};\nimport static org.junit.jupiter.api.Assertions.{{equals}};\nimport static org.junit.jupiter.api.Assertions.{{throws}};\n\nclass AmountTest {\n    static int positive(int value) {\n        if (value <= 0) throw new IllegalArgumentException(\"positivo\");\n        return value;\n    }\n\n    @Test\n    void acceptsPositiveAndRejectsZero() {\n        assertEquals(3, positive(3));\n        assertThrows(IllegalArgumentException.class, () -> positive(0));\n    }\n}",
+      "slots": [
+        {
+          "key": "test",
+          "label": "Anotação de teste",
+          "answers": [
+            "Test"
+          ],
+          "hint": "Pacote org.junit.jupiter.api."
+        },
+        {
+          "key": "equals",
+          "label": "Comparar esperado e obtido",
+          "answers": [
+            "assertEquals"
+          ],
+          "hint": "Esperado vem antes do resultado."
+        },
+        {
+          "key": "throws",
+          "label": "Validar exceção",
+          "answers": [
+            "assertThrows"
+          ],
+          "hint": "Recebe a classe e uma lambda que executa o código."
+        }
+      ],
+      "reference": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.assertEquals;\nimport static org.junit.jupiter.api.Assertions.assertThrows;\n\nclass AmountTest {\n    static int positive(int value) {\n        if (value <= 0) throw new IllegalArgumentException(\"positivo\");\n        return value;\n    }\n\n    @Test\n    void acceptsPositiveAndRejectsZero() {\n        assertEquals(3, positive(3));\n        assertThrows(IllegalArgumentException.class, () -> positive(0));\n    }\n}",
+      "explanation": "Lembre três blocos: preparar dado → executar → verificar. Para erro, a execução fica dentro da lambda para que o framework capture a exceção.",
+      "pitfalls": [
+        "Não execute positive(0) antes de chamar assertThrows.",
+        "JUnit não é parte da biblioteca padrão do JDK.",
+        "Um teste feliz não prova todas as regras do domínio."
+      ],
+      "sourceUrl": "https://docs.junit.org/6.1.3/writing-tests/intro.html",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "fw05",
+      "title": "FastAPI: rota e erro HTTP",
+      "language": "Python",
+      "framework": "FastAPI",
+      "level": "fundamento",
+      "prompt": "Python 3.11+, fastapi e uvicorn instalados. Salve como main.py e rode uvicorn main:app --reload. Complete import, decorator GET e exceção para valor inválido.",
+      "skeleton": "from fastapi import FastAPI, {{error}}\n\napp = FastAPI()\n\n@app.{{route}}(\"/double/{value}\")\ndef double(value: int):\n    if value < 0:\n        {{raise}} HTTPException(status_code=422, detail=\"value deve ser não negativo\")\n    return {\"result\": value * 2}",
+      "slots": [
+        {
+          "key": "error",
+          "label": "Erro HTTP do framework",
+          "answers": [
+            "HTTPException"
+          ],
+          "hint": "A exceção contém status_code e detail."
+        },
+        {
+          "key": "route",
+          "label": "Registrar método HTTP",
+          "answers": [
+            "get"
+          ],
+          "hint": "É o decorator do verbo GET."
+        },
+        {
+          "key": "raise",
+          "label": "Lançar a exceção",
+          "answers": [
+            "raise"
+          ],
+          "hint": "Retornar a exceção não equivale a lançá-la."
+        }
+      ],
+      "reference": "from fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n@app.get(\"/double/{value}\")\ndef double(value: int):\n    if value < 0:\n        raise HTTPException(status_code=422, detail=\"value deve ser não negativo\")\n    return {\"result\": value * 2}",
+      "explanation": "A sequência é import → instância app → decorator → função tipada → validação → resposta. O tipo int permite ao framework converter e validar o parâmetro do caminho.",
+      "pitfalls": [
+        "Não use async def para esconder uma operação bloqueante.",
+        "--reload é destinado a desenvolvimento.",
+        "HTTPException deve ser lançada com raise."
+      ],
+      "sourceUrl": "https://fastapi.tiangolo.com/tutorial/handling-errors/",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "fw06",
+      "title": "Pydantic 2: modelo, restrição e validação",
+      "language": "Python",
+      "framework": "Pydantic",
+      "level": "fundamento",
+      "prompt": "Python 3.11+ e Pydantic 2.x. Complete o modelo que aceita cents inteiro estritamente positivo e rejeita coerção a partir de texto. Execute o arquivo para conferir o exemplo.",
+      "skeleton": "from pydantic import {{base}}, {{field}}, ValidationError\n\nclass Payment(BaseModel):\n    cents: int = Field(gt=0, strict=True)\n\nvalid = Payment.{{validate}}({\"cents\": 125})\nassert valid.cents == 125\ntry:\n    Payment.model_validate({\"cents\": \"125\"})\nexcept ValidationError:\n    pass\nelse:\n    raise AssertionError(\"texto deveria ser rejeitado\")",
+      "slots": [
+        {
+          "key": "base",
+          "label": "Classe base do modelo",
+          "answers": [
+            "BaseModel"
+          ],
+          "hint": "O modelo declara campos com anotações."
+        },
+        {
+          "key": "field",
+          "label": "Restrições do campo",
+          "answers": [
+            "Field"
+          ],
+          "hint": "gt significa greater than."
+        },
+        {
+          "key": "validate",
+          "label": "API de validação Pydantic 2",
+          "answers": [
+            "model_validate"
+          ],
+          "hint": "Recebe um objeto de entrada, como um dict."
+        }
+      ],
+      "reference": "from pydantic import BaseModel, Field, ValidationError\n\nclass Payment(BaseModel):\n    cents: int = Field(gt=0, strict=True)\n\nvalid = Payment.model_validate({\"cents\": 125})\nassert valid.cents == 125\ntry:\n    Payment.model_validate({\"cents\": \"125\"})\nexcept ValidationError:\n    pass\nelse:\n    raise AssertionError(\"texto deveria ser rejeitado\")",
+      "explanation": "Separe representação e regra: int descreve o tipo, Field(gt=0, strict=True) controla valor e coerção, model_validate aplica o contrato à entrada.",
+      "pitfalls": [
+        "Pydantic 1 usa nomes de APIs diferentes em alguns pontos.",
+        "Validação de formato não prova autorização nem saldo.",
+        "Modelos são mutáveis por padrão; configure isso quando necessário."
+      ],
+      "sourceUrl": "https://pydantic.dev/docs/validation/latest/concepts/fields/",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "fw07",
+      "title": "pytest: asserção simples e exceção",
+      "language": "Python",
+      "framework": "pytest",
+      "level": "fundamento",
+      "prompt": "Python 3.11+ e pytest instalado. Salve como test_amount.py e execute python -m pytest -q. Complete import, asserção e contexto da exceção.",
+      "skeleton": "import {{framework}}\n\ndef positive(value: int) -> int:\n    if value <= 0:\n        raise ValueError(\"positivo\")\n    return value\n\ndef test_positive():\n    {{assertion}} positive(3) == 3\n\ndef test_zero_is_rejected():\n    with pytest.{{raises}}(ValueError, match=\"positivo\"):\n        positive(0)",
+      "slots": [
+        {
+          "key": "framework",
+          "label": "Pacote de teste",
+          "answers": [
+            "pytest"
+          ],
+          "hint": "O módulo não pertence à biblioteca padrão."
+        },
+        {
+          "key": "assertion",
+          "label": "Asserção da linguagem",
+          "answers": [
+            "assert"
+          ],
+          "hint": "pytest enriquece a mensagem da asserção."
+        },
+        {
+          "key": "raises",
+          "label": "Contexto que captura erro",
+          "answers": [
+            "raises"
+          ],
+          "hint": "A operação que falha fica dentro do with."
+        }
+      ],
+      "reference": "import pytest\n\ndef positive(value: int) -> int:\n    if value <= 0:\n        raise ValueError(\"positivo\")\n    return value\n\ndef test_positive():\n    assert positive(3) == 3\n\ndef test_zero_is_rejected():\n    with pytest.raises(ValueError, match=\"positivo\"):\n        positive(0)",
+      "explanation": "Lembre arquivo test_*.py, função test_* e assert. Use pytest.raises somente na menor região de código que deve falhar, para não aceitar erro de outra linha por acidente.",
+      "pitfalls": [
+        "Não escreva assert positive(0) para testar exceção.",
+        "match é expressão regular.",
+        "A versão de produção não deve depender de assert para validar entrada."
+      ],
+      "sourceUrl": "https://docs.pytest.org/en/stable/how-to/assert.html",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "fw08",
+      "title": "Coroutines: escopo, async e await",
+      "language": "Kotlin",
+      "framework": "kotlinx.coroutines",
+      "level": "intermediário",
+      "prompt": "Projeto Kotlin/JVM com kotlinx-coroutines-core:1.11.0 e toolchain compatível. Complete concorrência estruturada; a função só termina após receber os dois resultados. runBlocking é a ponte apenas no main deste exemplo.",
+      "skeleton": "import kotlinx.coroutines.async\nimport kotlinx.coroutines.coroutineScope\nimport kotlinx.coroutines.delay\nimport kotlinx.coroutines.runBlocking\n\nsuspend fun total(): Int = {{scope}} {\n    val first = {{start}} { delay(10); 2 }\n    val second = async { delay(10); 3 }\n    first.{{await}}() + second.await()\n}\n\nfun main() = runBlocking {\n    check(total() == 5)\n}",
+      "slots": [
+        {
+          "key": "scope",
+          "label": "Escopo suspenso estruturado",
+          "answers": [
+            "coroutineScope"
+          ],
+          "hint": "A falha de um filho cancela os irmãos deste escopo."
+        },
+        {
+          "key": "start",
+          "label": "Criar filho com resultado",
+          "answers": [
+            "async"
+          ],
+          "hint": "launch retorna Job; aqui precisamos de Deferred."
+        },
+        {
+          "key": "await",
+          "label": "Obter resultado suspenso",
+          "answers": [
+            "await"
+          ],
+          "hint": "Não confunda com join, que espera mas não retorna o valor."
+        }
+      ],
+      "reference": "import kotlinx.coroutines.async\nimport kotlinx.coroutines.coroutineScope\nimport kotlinx.coroutines.delay\nimport kotlinx.coroutines.runBlocking\n\nsuspend fun total(): Int = coroutineScope {\n    val first = async { delay(10); 2 }\n    val second = async { delay(10); 3 }\n    first.await() + second.await()\n}\n\nfun main() = runBlocking {\n    check(total() == 5)\n}",
+      "explanation": "A sequência é suspend → coroutineScope → async → await. Concorrência não implica execução simultânea em múltiplos núcleos; isso depende do dispatcher e do trabalho.",
+      "pitfalls": [
+        "Não use GlobalScope como atalho para evitar passar um escopo.",
+        "Não capture CancellationException sem relançar quando necessário.",
+        "Thread.sleep bloqueia uma thread; delay suspende."
+      ],
+      "sourceUrl": "https://kotlinlang.org/docs/coroutines-basics.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "fw09",
+      "title": "Clojure: namespace de teste e asserção",
+      "language": "Clojure",
+      "framework": "clojure.test",
+      "level": "fundamento",
+      "prompt": "Clojure 1.11+ com CLI instalada. Salve em src/study/core_test.clj e execute clojure -M -m study.core-test com src no classpath. Complete import dos símbolos, definição do teste e asserção.",
+      "skeleton": "(ns study.core-test\n  (:require [clojure.test :refer [deftest is run-tests]]))\n\n(defn positive [n]\n  (if (pos? n) n (throw (ex-info \"positivo\" {:value n}))))\n\n({{test}} positive-contract\n  ({{assertion}} (= 3 (positive 3)))\n  (is (thrown? clojure.lang.ExceptionInfo (positive 0))))\n\n(defn -main [& _]\n  (let [result ({{runner}} 'study.core-test)]\n    (when (pos? (+ (:fail result) (:error result)))\n      (throw (ex-info \"testes falharam\" result)))))",
+      "slots": [
+        {
+          "key": "test",
+          "label": "Definir teste",
+          "answers": [
+            "deftest"
+          ],
+          "hint": "O nome do teste vem antes de suas expressões."
+        },
+        {
+          "key": "assertion",
+          "label": "Verificar expressão",
+          "answers": [
+            "is"
+          ],
+          "hint": "A expressão de comparação fica dentro da macro."
+        },
+        {
+          "key": "runner",
+          "label": "Executar namespace",
+          "answers": [
+            "run-tests"
+          ],
+          "hint": "Passe o símbolo do namespace com quote."
+        }
+      ],
+      "reference": "(ns study.core-test\n  (:require [clojure.test :refer [deftest is run-tests]]))\n\n(defn positive [n]\n  (if (pos? n) n (throw (ex-info \"positivo\" {:value n}))))\n\n(deftest positive-contract\n  (is (= 3 (positive 3)))\n  (is (thrown? clojure.lang.ExceptionInfo (positive 0))))\n\n(defn -main [& _]\n  (let [result (run-tests 'study.core-test)]\n    (when (pos? (+ (:fail result) (:error result)))\n      (throw (ex-info \"testes falharam\" result)))))",
+      "explanation": "A ordem é ns/:require → funções → deftest → is → runner. thrown? é uma forma reconhecida dentro de is; não precisa importar uma função thrown?.",
+      "pitfalls": [
+        "Não confunda (= esperado obtido) com atribuição.",
+        "require usa símbolos e caminhos de namespace, não import Java.",
+        "Sem runner/configuração, só definir testes não os executa."
+      ],
+      "sourceUrl": "https://clojure.github.io/clojure/clojure.test-api.html",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "fw10",
+      "title": "Kafka Java: poll e commit explícito",
+      "language": "Java",
+      "framework": "Apache Kafka client",
+      "level": "intermediário",
+      "prompt": "Java 17+ e org.apache.kafka:kafka-clients:4.1.2 no classpath. Requer broker local em localhost:9092 e tópico study-events. Exemplo de laboratório: cinco polls, impressão e commit; não demonstra exactly-once com efeito externo.",
+      "skeleton": "import java.time.Duration;\nimport java.util.List;\nimport java.util.Properties;\nimport org.apache.kafka.clients.consumer.{{consumer}};\nimport org.apache.kafka.common.serialization.StringDeserializer;\n\npublic class Main {\n    public static void main(String[] args) {\n        Properties config = new Properties();\n        config.put(\"bootstrap.servers\", \"localhost:9092\");\n        config.put(\"group.id\", \"study-syntax\");\n        config.put(\"enable.auto.commit\", \"false\");\n        config.put(\"auto.offset.reset\", \"earliest\");\n        config.put(\"key.deserializer\", StringDeserializer.class.getName());\n        config.put(\"value.deserializer\", StringDeserializer.class.getName());\n        try (KafkaConsumer<String, String> client = new KafkaConsumer<>(config)) {\n            client.subscribe(List.of(\"study-events\"));\n            for (int i = 0; i < 5; i++) {\n                var records = client.{{poll}}(Duration.ofSeconds(1));\n                for (var record : records) System.out.println(record.value());\n                if (!records.isEmpty()) client.{{commit}}();\n            }\n        }\n    }\n}",
+      "slots": [
+        {
+          "key": "consumer",
+          "label": "Cliente consumidor",
+          "answers": [
+            "KafkaConsumer"
+          ],
+          "hint": "O pacote é clients.consumer."
+        },
+        {
+          "key": "poll",
+          "label": "Buscar registros",
+          "answers": [
+            "poll"
+          ],
+          "hint": "A API recebe java.time.Duration."
+        },
+        {
+          "key": "commit",
+          "label": "Confirmar offsets de forma síncrona",
+          "answers": [
+            "commitSync"
+          ],
+          "hint": "Ocorre somente após processar o lote neste exemplo."
+        }
+      ],
+      "reference": "import java.time.Duration;\nimport java.util.List;\nimport java.util.Properties;\nimport org.apache.kafka.clients.consumer.KafkaConsumer;\nimport org.apache.kafka.common.serialization.StringDeserializer;\n\npublic class Main {\n    public static void main(String[] args) {\n        Properties config = new Properties();\n        config.put(\"bootstrap.servers\", \"localhost:9092\");\n        config.put(\"group.id\", \"study-syntax\");\n        config.put(\"enable.auto.commit\", \"false\");\n        config.put(\"auto.offset.reset\", \"earliest\");\n        config.put(\"key.deserializer\", StringDeserializer.class.getName());\n        config.put(\"value.deserializer\", StringDeserializer.class.getName());\n        try (KafkaConsumer<String, String> client = new KafkaConsumer<>(config)) {\n            client.subscribe(List.of(\"study-events\"));\n            for (int i = 0; i < 5; i++) {\n                var records = client.poll(Duration.ofSeconds(1));\n                for (var record : records) System.out.println(record.value());\n                if (!records.isEmpty()) client.commitSync();\n            }\n        }\n    }\n}",
+      "explanation": "Pense configurar → abrir → subscribe → poll → processar → commit → close. Se o processo cair após o efeito e antes do commit, o efeito pode repetir; idempotência é uma responsabilidade separada.",
+      "pitfalls": [
+        "KafkaConsumer não é thread-safe para uso arbitrário concorrente.",
+        "auto.offset.reset só atua quando não existe offset válido.",
+        "Um poll curto pode não receber dados enquanto ocorre atribuição de partições."
+      ],
+      "sourceUrl": "https://kafka.apache.org/41/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "fw11",
+      "title": "Flutter: estado e atualização síncrona",
+      "language": "Dart",
+      "framework": "Flutter",
+      "level": "fundamento",
+      "prompt": "Flutter 3.x / Dart 3.x; substitua lib/main.dart de flutter create. Complete import e a classe de estado mutável. O callback de setState atualiza o contador de forma síncrona.",
+      "skeleton": "import 'package:flutter/{{library}}.dart';\n\nvoid main() => runApp(const MaterialApp(home: Counter()));\n\nclass Counter extends {{widget}} {\n  const Counter({super.key});\n  @override\n  State<Counter> createState() => _CounterState();\n}\n\nclass _CounterState extends State<Counter> {\n  int count = 0;\n  @override\n  Widget build(BuildContext context) => Scaffold(\n    body: Center(child: ElevatedButton(\n      onPressed: () => {{update}}(() { count += 1; }),\n      child: Text('Cliques: $count'),\n    )),\n  );\n}",
+      "slots": [
+        {
+          "key": "library",
+          "label": "Biblioteca de componentes Material",
+          "answers": [
+            "material"
+          ],
+          "hint": "Inclui MaterialApp, Scaffold e ElevatedButton."
+        },
+        {
+          "key": "widget",
+          "label": "Widget com estado",
+          "answers": [
+            "StatefulWidget"
+          ],
+          "hint": "O estado mutável vive em uma classe State separada."
+        },
+        {
+          "key": "update",
+          "label": "Solicitar atualização do estado",
+          "answers": [
+            "setState"
+          ],
+          "hint": "O callback não pode ser async."
+        }
+      ],
+      "reference": "import 'package:flutter/material.dart';\n\nvoid main() => runApp(const MaterialApp(home: Counter()));\n\nclass Counter extends StatefulWidget {\n  const Counter({super.key});\n  @override\n  State<Counter> createState() => _CounterState();\n}\n\nclass _CounterState extends State<Counter> {\n  int count = 0;\n  @override\n  Widget build(BuildContext context) => Scaffold(\n    body: Center(child: ElevatedButton(\n      onPressed: () => setState(() { count += 1; }),\n      child: Text('Cliques: $count'),\n    )),\n  );\n}",
+      "explanation": "A sequência é import → main/runApp → StatefulWidget → State → build → evento/setState. setState informa que os dados usados por build mudaram; não execute rede ou espera dentro do callback.",
+      "pitfalls": [
+        "Após trabalho assíncrono, não chame setState em State descartado.",
+        "Prefira cancelar trabalho pendente quando o widget é descartado.",
+        "Não crie estado mutável dentro de build."
+      ],
+      "sourceUrl": "https://api.flutter.dev/flutter/widgets/State/setState.html",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "fw12",
+      "title": "Flutter: formulário e validação",
+      "language": "Dart",
+      "framework": "Flutter",
+      "level": "intermediário",
+      "prompt": "Flutter 3.x / Dart 3.x; arquivo lib/main.dart. Complete a chave persistente do formulário, o tipo de seu estado e o callback de validação. O exemplo só valida presença de nome.",
+      "skeleton": "import 'package:flutter/material.dart';\n\nvoid main() => runApp(const MaterialApp(home: NameForm()));\n\nclass NameForm extends StatefulWidget {\n  const NameForm({super.key});\n  @override\n  State<NameForm> createState() => _NameFormState();\n}\n\nclass _NameFormState extends State<NameForm> {\n  final formKey = {{key}}<{{state}}>();\n  bool valid = false;\n\n  @override\n  Widget build(BuildContext context) => Scaffold(\n    body: Padding(\n      padding: const EdgeInsets.all(24),\n      child: Form(key: formKey, child: Column(children: [\n        TextFormField(\n          decoration: const InputDecoration(labelText: 'Nome'),\n          {{validator}}: (value) => value == null || value.trim().isEmpty\n              ? 'Informe seu nome' : null,\n        ),\n        ElevatedButton(\n          onPressed: () {\n            final result = formKey.currentState?.validate() ?? false;\n            setState(() { valid = result; });\n          },\n          child: const Text('Validar'),\n        ),\n        Text(valid ? 'Nome válido' : 'Preencha o formulário'),\n      ])),\n    ),\n  );\n}",
+      "slots": [
+        {
+          "key": "key",
+          "label": "Chave mantida entre builds",
+          "answers": [
+            "GlobalKey"
+          ],
+          "hint": "Crie uma vez como campo do State."
+        },
+        {
+          "key": "state",
+          "label": "Tipo do estado do formulário",
+          "answers": [
+            "FormState"
+          ],
+          "hint": "A chave dá acesso a validate()."
+        },
+        {
+          "key": "validator",
+          "label": "Callback de validação",
+          "answers": [
+            "validator"
+          ],
+          "hint": "Retorna mensagem de erro ou null para sucesso."
+        }
+      ],
+      "reference": "import 'package:flutter/material.dart';\n\nvoid main() => runApp(const MaterialApp(home: NameForm()));\n\nclass NameForm extends StatefulWidget {\n  const NameForm({super.key});\n  @override\n  State<NameForm> createState() => _NameFormState();\n}\n\nclass _NameFormState extends State<NameForm> {\n  final formKey = GlobalKey<FormState>();\n  bool valid = false;\n\n  @override\n  Widget build(BuildContext context) => Scaffold(\n    body: Padding(\n      padding: const EdgeInsets.all(24),\n      child: Form(key: formKey, child: Column(children: [\n        TextFormField(\n          decoration: const InputDecoration(labelText: 'Nome'),\n          validator: (value) => value == null || value.trim().isEmpty\n              ? 'Informe seu nome' : null,\n        ),\n        ElevatedButton(\n          onPressed: () {\n            final result = formKey.currentState?.validate() ?? false;\n            setState(() { valid = result; });\n          },\n          child: const Text('Validar'),\n        ),\n        Text(valid ? 'Nome válido' : 'Preencha o formulário'),\n      ])),\n    ),\n  );\n}",
+      "explanation": "A ordem é chave no State → Form(key) → TextFormField(validator) → validate no evento. O retorno null representa campo válido; String representa mensagem de erro.",
+      "pitfalls": [
+        "Não recrie GlobalKey dentro de build.",
+        "Validação de cliente não substitui validação do servidor.",
+        "Para telas pequenas, adapte layout/rolagem ao teclado."
+      ],
+      "sourceUrl": "https://docs.flutter.dev/cookbook/forms/validation",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    }
+  ],
+  "recipes": [
+    {
+      "id": "r01",
+      "title": "Python: esqueleto para top-k e casos de fronteira",
+      "language": "Python",
+      "context": "Python 3.11+, somente biblioteca padrão. Salve em main.py e execute python3 main.py. Contrato: lista de inteiros; k<=0 retorna vazio; duplicatas contam. Asserções são testes didáticos e podem ser desabilitadas com -O.",
+      "code": "from heapq import heappush, heapreplace\n\ndef top_k(values: list[int], k: int) -> list[int]:\n    if k <= 0:\n        return []\n    heap: list[int] = []\n    for value in values:\n        if len(heap) < k:\n            heappush(heap, value)\n        elif value > heap[0]:\n            heapreplace(heap, value)\n    return sorted(heap, reverse=True)\n\nassert top_k([3, 9, 2, 9, 4], 3) == [9, 9, 4]\nassert top_k([], 3) == []\nassert top_k([5, 1], 0) == []\nassert top_k([5, 1], 10) == [5, 1]\nassert top_k([-3, -1, -5], 2) == [-1, -3]\nprint(\"top-k: exemplos passaram\")",
+      "sequence": [
+        "IMPORTS: a estrutura pede heapq; escreva heappush e heapreplace.",
+        "TIPOS: liste entrada, k e lista de saída. Pergunte se duplicatas contam.",
+        "FUNÇÃO: def top_k(values, k) antes de tentar lembrar todo o algoritmo.",
+        "FLUXO: guarda → coleção vazia → percorrer → preencher/substituir → ordenar saída.",
+        "ERRO/FRONTEIRA: declare a política de k<=0 e k maior que n; não invente regras escondidas.",
+        "TESTES: vazio, duplicatas, negativos e limite de k. Depois compare com sorted(values, reverse=True)[:max(0,k)] em dados pequenos."
+      ],
+      "pitfalls": [
+        "O heap sozinho não é a saída ordenada.",
+        "A assinatura não valida tipos em runtime.",
+        "Explique o invariante antes da complexidade."
+      ],
+      "sourceUrl": "https://docs.python.org/3/library/heapq.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "r02",
+      "title": "Kotlin: função de domínio com require e check",
+      "language": "Kotlin",
+      "context": "Kotlin/JVM 2.x com JDK compatível, sem dependência externa. Salve Main.kt; compile com kotlinc Main.kt -include-runtime -d main.jar e rode java -jar main.jar. Dinheiro é inteiro de menor unidade; não há moeda/conversão neste exemplo.",
+      "code": "data class Account(val id: String, val cents: Long)\n\nfun debit(account: Account, amount: Long): Account {\n    require(account.cents >= 0) { \"saldo inválido\" }\n    require(amount > 0) { \"valor deve ser positivo\" }\n    require(amount <= account.cents) { \"saldo insuficiente\" }\n    return account.copy(cents = account.cents - amount)\n}\n\nfun main() {\n    val before = Account(\"a\", 100)\n    check(debit(before, 30) == Account(\"a\", 70))\n    check(before.cents == 100L)\n    check(debit(before, 100).cents == 0L)\n    val error = runCatching { debit(before, 101) }.exceptionOrNull()\n    check(error is IllegalArgumentException)\n}",
+      "sequence": [
+        "IMPORTS: aqui nenhum; data class, Long, require e check já estão disponíveis.",
+        "TIPOS: Account imutável na superfície e valor Long em unidade explícita.",
+        "FUNÇÃO: escreva entrada e retorno antes das regras.",
+        "FLUXO: validar saldo → validar valor → verificar limite → devolver copy.",
+        "ERRO: require comunica argumento fora do contrato. A política real de erro pode ser um tipo de resultado.",
+        "TESTES: estado original, débito parcial, débito total e valor maior que saldo."
+      ],
+      "pitfalls": [
+        "A função não resolve concorrência entre requisições.",
+        "Não use runCatching indiscriminadamente em coroutines; ele pode capturar cancelamento.",
+        "Dinheiro em Long ainda exige limites, moeda e tratamento de overflow em outras operações."
+      ],
+      "sourceUrl": "https://kotlinlang.org/docs/exceptions.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "r03",
+      "title": "Clojure: função pura e teste no mesmo namespace",
+      "language": "Clojure",
+      "context": "Clojure 1.11+ com CLI. Crie deps.edn com {:paths [\"src\"]}; salve src/study/core_test.clj e rode clojure -M -m study.core-test. clojure.test acompanha a distribuição padrão. O trecho é autoral e pequeno para reconstrução de memória.",
+      "code": "(ns study.core-test\n  (:require [clojure.test :refer [deftest is run-tests]]))\n\n(defn positive [n]\n  (if (pos? n) n (throw (ex-info \"positivo\" {:value n}))))\n\n(deftest positive-contract\n  (is (= 3 (positive 3)))\n  (is (thrown? clojure.lang.ExceptionInfo (positive 0))))\n\n(defn -main [& _]\n  (let [result (run-tests 'study.core-test)]\n    (when (pos? (+ (:fail result) (:error result)))\n      (throw (ex-info \"testes falharam\" result)))))",
+      "sequence": [
+        "IMPORTS: ns primeiro; :require para namespaces Clojure; :import seria para classes JVM.",
+        "TIPOS/CONTRATO: este exercício assume número comparável a zero; escreva exemplos de entrada e saída.",
+        "FUNÇÃO: defn → nome → vetor de parâmetros → expressão.",
+        "FLUXO: if → caso positivo → erro; cada parêntese fecha uma forma.",
+        "ERRO: ex-info transporta mensagem e mapa de dados; throw efetivamente lança.",
+        "TESTES: deftest contém is; run-tests recebe símbolo do namespace. O main propaga falha para não parecer sucesso."
+      ],
+      "pitfalls": [
+        "Use expressão (= 3 resultado), não uma comparação em estilo infixo.",
+        "Teste definido não significa teste executado.",
+        "Aprenda a indentação por formas; contar parênteses mentalmente é um recurso frágil."
+      ],
+      "sourceUrl": "https://clojure.github.io/clojure/clojure.test-api.html",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "r04",
+      "title": "Java: valor decimal, regra explícita e testes sem framework",
+      "language": "Java",
+      "context": "Java 21, somente JDK. Salve Main.java, rode javac Main.java e java Main. HALF_UP é apenas a regra escolhida para este exercício; entradas devem ser decimais textuais finitos de magnitude limitada.",
+      "code": "import java.math.BigDecimal;\nimport java.math.RoundingMode;\n\npublic class Main {\n    static BigDecimal normalize(String text) {\n        BigDecimal amount = new BigDecimal(text);\n        if (amount.signum() < 0) {\n            throw new IllegalArgumentException(\"valor negativo\");\n        }\n        return amount.setScale(2, RoundingMode.HALF_UP);\n    }\n\n    public static void main(String[] args) {\n        if (normalize(\"12.345\").compareTo(new BigDecimal(\"12.35\")) != 0) {\n            throw new AssertionError(\"arredondamento\");\n        }\n        if (normalize(\"0\").scale() != 2) throw new AssertionError(\"escala\");\n        try {\n            normalize(\"-1\");\n            throw new AssertionError(\"deveria rejeitar negativo\");\n        } catch (IllegalArgumentException expected) {\n            // Falha esperada do contrato.\n        }\n    }\n}",
+      "sequence": [
+        "IMPORTS: java.math.BigDecimal e RoundingMode são pistas do domínio decimal.",
+        "TIPOS: entrada textual; saída decimal; nenhum double intermediário.",
+        "FUNÇÃO: static permite chamar diretamente no main didático.",
+        "FLUXO: construir → validar → aplicar escala → retornar.",
+        "ERRO: dado malformado e negativo são rejeitados; em uma API, faça o mapeamento adequado para resposta.",
+        "TESTES: arredondamento, escala e rejeição; compareTo compara valor numérico enquanto equals também considera escala."
+      ],
+      "pitfalls": [
+        "Não construa BigDecimal a partir de double para recuperar precisão perdida.",
+        "Normalização não substitui limites de tamanho/escala para entrada não confiável.",
+        "Uma política financeira real precisa definir quando e onde arredondar."
+      ],
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/math/BigDecimal.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "r05",
+      "title": "TypeScript: fronteira unknown e união discriminada",
+      "language": "TypeScript",
+      "context": "TypeScript 5.x ou 6.x, alvo ES2020+, sem dependências de runtime. Salve main.ts. Com typescript instalado, rode npx tsc main.ts --strict --target ES2020 --module commonjs e node main.js. O compilador não valida JSON externo sozinho.",
+      "code": "type ParseResult =\n  | { ok: true; cents: bigint }\n  | { ok: false; error: string };\n\nfunction parseCents(value: unknown): ParseResult {\n  if (typeof value !== 'string' || !/^[0-9]{1,15}$/.test(value)) {\n    return { ok: false, error: 'use de 1 a 15 dígitos' };\n  }\n  return { ok: true, cents: BigInt(value) };\n}\n\nfunction describe(result: ParseResult): string {\n  if (!result.ok) return result.error;\n  return `${result.cents} centavos`;\n}\n\nconst valid = parseCents('125');\nif (!valid.ok || valid.cents !== 125n) throw new Error('caso válido');\nif (parseCents(125).ok) throw new Error('número externo foi aceito');\nif (parseCents('-1').ok) throw new Error('negativo foi aceito');\nconsole.log(describe(valid));",
+      "sequence": [
+        "IMPORTS: BigInt é global; não invente um pacote para ele.",
+        "TIPOS: unknown na fronteira e resultado com discriminante ok.",
+        "FUNÇÃO: decidir se validação retorna erro ou lança exceção; seja consistente.",
+        "FLUXO: guarda de tipo/formato → conversão → retorno; depois narrowing antes de acessar cents.",
+        "ERRO: regex e limite tornam a conversão previsível neste contrato. Formato inválido vira resultado tipado.",
+        "TESTES: texto válido, número externo e sinal negativo; acrescente comprimento e texto vazio."
+      ],
+      "pitfalls": [
+        "bigint não é serializado por JSON.stringify sem política de conversão.",
+        "Number pode perder inteiros acima de sua faixa segura.",
+        "as não executa validação em runtime."
+      ],
+      "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html",
+      "validation": "Exemplo executado com sucesso no Node 24.3 com remoção de tipos em 26/10/2026. Não houve type-check com tsc; a execução não prova a checagem estática."
+    },
+    {
+      "id": "r06",
+      "title": "PostgreSQL: ensaio de transação com verificação",
+      "language": "SQL",
+      "context": "PostgreSQL 18 e cliente psql. Execute em uma base de laboratório com psql -v ON_ERROR_STOP=1 -f exercise.sql. A tabela é temporária e o ROLLBACK desfaz o ensaio. O trecho não se conecta a nenhuma base por conta própria.",
+      "code": "BEGIN;\nCREATE TEMP TABLE exercise_account (\n  id text PRIMARY KEY,\n  cents bigint NOT NULL CHECK (cents >= 0)\n);\nINSERT INTO exercise_account VALUES ('a', 100), ('b', 0);\n\n-- Ordem estável de aquisição ajuda a evitar ciclos entre participantes.\nSELECT id FROM exercise_account WHERE id IN ('a', 'b') ORDER BY id FOR UPDATE;\nUPDATE exercise_account SET cents = cents - 30 WHERE id = 'a' AND cents >= 30;\nUPDATE exercise_account SET cents = cents + 30 WHERE id = 'b';\n\nDO $$\nBEGIN\n  IF (SELECT cents FROM exercise_account WHERE id = 'a') <> 70\n     OR (SELECT cents FROM exercise_account WHERE id = 'b') <> 30\n     OR (SELECT sum(cents) FROM exercise_account) <> 100 THEN\n    RAISE EXCEPTION 'invariante violado';\n  END IF;\nEND $$;\nROLLBACK;",
+      "sequence": [
+        "IMPORTS/AMBIENTE: SQL executa em sessão com conexão, schema e permissões; confirme a base de laboratório.",
+        "TIPOS: bigint para centavos, chave primária e CHECK explícito.",
+        "FUNÇÃO/UNIDADE: a transação é o limite de atomicidade do exercício.",
+        "FLUXO: BEGIN → bloquear linhas em ordem → debitar → creditar → verificar → ROLLBACK didático.",
+        "ERRO: em código geral, conferir linhas alteradas antes de creditar; este ensaio fixa duas contas existentes e saldo suficiente.",
+        "TESTES: saldo esperado e conservação da soma; depois simule saldo insuficiente em versão que cheque a contagem de linhas."
+      ],
+      "pitfalls": [
+        "Copiar os dois UPDATEs sem checar o débito pode criar dinheiro quando a guarda falha.",
+        "Atomicidade no banco não inclui automaticamente publicação no Kafka.",
+        "Tratamento de deadlock/serialização requer retry da transação inteira conforme contrato."
+      ],
+      "sourceUrl": "https://www.postgresql.org/docs/18/explicit-locking.html",
+      "validation": "Revisão estática. A criação de PostgreSQL isolado para este conjunto foi impedida pela permissão de memória compartilhada do ambiente; estes snippets não foram executados nesta validação."
+    },
+    {
+      "id": "r07",
+      "title": "React: entrada controlada, validação e estado derivado",
+      "language": "TypeScript · TSX",
+      "context": "Projeto React 19.x + React DOM 19.x, TypeScript e bundler com JSX, como template react-ts do Vite. Salve src/App.tsx. As demais configurações e dependências pertencem ao projeto gerado. Teste manualmente em npm run dev; o snippet não inclui um runner de testes.",
+      "code": "import { useState } from 'react';\nimport type { FormEvent } from 'react';\n\nexport default function App() {\n  const [name, setName] = useState('');\n  const [submitted, setSubmitted] = useState(false);\n  const trimmed = name.trim();\n  const error = submitted && trimmed.length === 0 ? 'Informe um nome' : '';\n\n  function submit(event: FormEvent<HTMLFormElement>) {\n    event.preventDefault();\n    setSubmitted(true);\n  }\n\n  return <form onSubmit={submit}>\n    <label htmlFor=\"name\">Nome</label>\n    <input id=\"name\" value={name}\n      onChange={event => { setName(event.target.value); setSubmitted(false); }}\n      aria-invalid={Boolean(error)} aria-describedby=\"name-feedback\" />\n    <button type=\"submit\">Validar</button>\n    <p id=\"name-feedback\" role=\"status\">\n      {error || (submitted ? `Olá, ${trimmed}` : '')}\n    </p>\n  </form>;\n}",
+      "sequence": [
+        "IMPORTS: useState é valor; FormEvent é tipo, por isso import type.",
+        "TIPOS: evento HTMLFormElement; nome é string; envio é boolean.",
+        "FUNÇÃO: componente no topo; hook sem condição; handler separado.",
+        "FLUXO: digitar → onChange → setState → render; enviar → preventDefault → validar.",
+        "ERRO: derive a mensagem do estado atual; não crie useEffect apenas para manter valores derivados.",
+        "TESTES: enviar vazio mostra erro, espaços não passam, nome válido mostra saudação, teclado e label funcionam."
+      ],
+      "pitfalls": [
+        "Campo controlado precisa de value e onChange coerentes.",
+        "A validação deste exemplo é somente local.",
+        "Separar estado derivado evita fontes divergentes de verdade."
+      ],
+      "sourceUrl": "https://react.dev/reference/react/useState",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "r08",
+      "title": "Spring + JUnit: regra pura atrás de controlador",
+      "language": "Java",
+      "context": "Projeto Maven gerado pelo Spring Initializr, Java 21, Spring Boot 3.x ou 4.x suportado e dependências Spring Web + Spring Boot Starter Test. Mantenha versões gerenciadas pelo BOM gerado. Separe os três arquivos indicados. Rode ./mvnw test e ./mvnw spring-boot:run. O teste chama o método diretamente; não é teste de integração HTTP.",
+      "code": "// src/main/java/example/Application.java\npackage example;\nimport org.springframework.boot.SpringApplication;\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\n\n@SpringBootApplication\npublic class Application {\n    public static void main(String[] args) {\n        SpringApplication.run(Application.class, args);\n    }\n}\n\n// src/main/java/example/DoubleController.java\npackage example;\nimport java.util.Map;\nimport org.springframework.http.HttpStatus;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.PathVariable;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.server.ResponseStatusException;\n\n@RestController\npublic class DoubleController {\n    @GetMapping(\"/double/{value}\")\n    public Map<String, Long> doubleValue(@PathVariable(\"value\") long value) {\n        if (value < 0 || value > Long.MAX_VALUE / 2) {\n            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, \"valor fora do limite\");\n        }\n        return Map.of(\"result\", value * 2);\n    }\n}\n\n// src/test/java/example/DoubleControllerTest.java\npackage example;\nimport org.junit.jupiter.api.Test;\nimport org.springframework.web.server.ResponseStatusException;\nimport static org.junit.jupiter.api.Assertions.assertEquals;\nimport static org.junit.jupiter.api.Assertions.assertThrows;\n\nclass DoubleControllerTest {\n    private final DoubleController controller = new DoubleController();\n    @Test void doublesAndRejectsInvalidInput() {\n        assertEquals(6L, controller.doubleValue(3).get(\"result\").longValue());\n        assertThrows(ResponseStatusException.class, () -> controller.doubleValue(-1));\n        assertThrows(ResponseStatusException.class, () -> controller.doubleValue(Long.MAX_VALUE));\n    }\n}",
+      "sequence": [
+        "IMPORTS: classe Boot; anotações Web; erro HTTP; teste Jupiter ficam em arquivos próprios.",
+        "TIPOS: long com limite de multiplicação; Map retornado é serializado pelo stack Web.",
+        "FUNÇÃO: classe pública no arquivo de mesmo nome; método com rota e parâmetro explícito.",
+        "FLUXO: cliente → rota → conversão do parâmetro → validação → retorno.",
+        "ERRO: rejeite negativo e overflow antes de multiplicar; não converta todo erro interno em 400.",
+        "TESTES: valide comportamento puro; para cobertura HTTP, adicione teste de serialização/status adequado à versão Boot do projeto."
+      ],
+      "pitfalls": [
+        "Não cole múltiplas declarações package em um único arquivo.",
+        "Não misture versões de Spring e JUnit manualmente sem verificar compatibilidade.",
+        "Não exponha detalhes internos em mensagens de erro de produção."
+      ],
+      "sourceUrl": "https://spring.io/guides/gs/rest-service/",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "r09",
+      "title": "FastAPI + Pydantic + pytest: corpo validado de ponta a ponta local",
+      "language": "Python",
+      "context": "Python 3.11+, ambiente virtual e versões compatíveis atuais de fastapi, pydantic 2.x, uvicorn, httpx e pytest. Instale com python -m pip install fastapi \"pydantic>=2,<3\" uvicorn httpx pytest; registre o lock do ambiente usado. Separe main.py e test_main.py. Rode python -m pytest -q; opcionalmente uvicorn main:app --reload.",
+      "code": "# main.py\nfrom fastapi import FastAPI\nfrom pydantic import BaseModel, Field\n\napp = FastAPI()\n\nclass DoubleRequest(BaseModel):\n    value: int = Field(ge=0, le=1_000_000, strict=True)\n\nclass DoubleResponse(BaseModel):\n    result: int\n\n@app.post(\"/double\", response_model=DoubleResponse)\ndef double(body: DoubleRequest) -> DoubleResponse:\n    return DoubleResponse(result=body.value * 2)\n\n# test_main.py (arquivo separado)\nfrom fastapi.testclient import TestClient\nfrom main import app\n\ndef test_double_contract():\n    with TestClient(app) as client:\n        good = client.post(\"/double\", json={\"value\": 3})\n        assert good.status_code == 200\n        assert good.json() == {\"result\": 6}\n        assert client.post(\"/double\", json={\"value\": -1}).status_code == 422\n        assert client.post(\"/double\", json={\"value\": \"3\"}).status_code == 422",
+      "sequence": [
+        "IMPORTS: FastAPI para roteamento; BaseModel/Field para contrato; TestClient somente no teste.",
+        "TIPOS: modelos distintos de entrada e resposta deixam fronteiras claras.",
+        "FUNÇÃO: decorator antes da função; corpo tipado permite validação automática.",
+        "FLUXO: JSON → modelo validado → função → modelo de resposta → JSON.",
+        "ERRO: Field rejeita faixa e coerção; regra de negócio mais complexa merece erro próprio e mapeamento deliberado.",
+        "TESTES: status + conteúdo feliz; negativo e texto no lugar de inteiro. TestClient exercita a aplicação sem abrir servidor TCP."
+      ],
+      "pitfalls": [
+        "Não coloque código de teste de TestClient no arquivo de produção.",
+        "Ferramentas síncronas dentro de async def podem bloquear o event loop.",
+        "Sem lock, futuras instalações podem escolher versões diferentes."
+      ],
+      "sourceUrl": "https://fastapi.tiangolo.com/tutorial/testing/",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "r10",
+      "title": "Coroutines: concorrência estruturada com prazo",
+      "language": "Kotlin",
+      "context": "Projeto Kotlin/JVM 2.x com versão compatível e implementation(\"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0\"). APIs verificadas na documentação oficial consultada em 26/10/2026. Salve Main.kt em projeto com application plugin/main configurado. Rode pelo Gradle do projeto; dependency não faz parte da stdlib.",
+      "code": "import kotlinx.coroutines.async\nimport kotlinx.coroutines.coroutineScope\nimport kotlinx.coroutines.delay\nimport kotlinx.coroutines.runBlocking\nimport kotlinx.coroutines.withTimeout\n\nsuspend fun fetchPart(value: Int): Int {\n    require(value >= 0) { \"valor inválido\" }\n    delay(10)\n    return value\n}\n\nsuspend fun combined(): Int = withTimeout(2_000) {\n    coroutineScope {\n        val first = async { fetchPart(2) }\n        val second = async { fetchPart(3) }\n        first.await() + second.await()\n    }\n}\n\nfun main() = runBlocking {\n    check(combined() == 5)\n    try {\n        fetchPart(-1)\n        error(\"deveria rejeitar\")\n    } catch (expected: IllegalArgumentException) {\n        check(expected.message == \"valor inválido\")\n    }\n}",
+      "sequence": [
+        "IMPORTS: escolha explicitamente escopo, criação de filho, suspensão e prazo.",
+        "TIPOS: suspend marca função que pode suspender; não cria thread por si só.",
+        "FUNÇÃO: runBlocking somente na fronteira main; dentro, funções suspend.",
+        "FLUXO: prazo → escopo → async de cada filho → await → retorno agregado.",
+        "ERRO: falha de filho cancela os demais neste escopo; não esconda cancelamento em catch genérico.",
+        "TESTES: resultado e argumento inválido no main; em suíte, use kotlinx-coroutines-test e tempo virtual para prazo sem testes frágeis de relógio."
+      ],
+      "pitfalls": [
+        "withTimeout é cooperativo; não interrompe magicamente qualquer chamada bloqueante.",
+        "Use dispatcher apropriado para CPU ou I/O bloqueante conforme a API.",
+        "Dois async não provam paralelismo em múltiplos núcleos."
+      ],
+      "sourceUrl": "https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/coroutine-scope.html",
+      "validation": "Exemplo executado com sucesso em 26/10/2026: Python 3.12/Pydantic 2.14, ou Kotlin 2.2/JDK 17, ou JDK 17 conforme a linguagem. Coroutines usou o JAR instalado com Kotlin; dependências externas das demais receitas não foram instaladas."
+    },
+    {
+      "id": "r11",
+      "title": "Kafka consumidor: ordem que evita commit antes do trabalho",
+      "language": "Java",
+      "context": "Java 17+ com org.apache.kafka:kafka-clients:4.1.2 no classpath; broker de laboratório localhost:9092, tópico study-events e permissão de consumo. Salve Main.java e execute pelo Maven/Gradle configurado. Não rode em ambiente real sem ajustar autenticação, grupo e política de dados. Este cliente só imprime e faz cinco polls.",
+      "code": "import java.time.Duration;\nimport java.util.List;\nimport java.util.Properties;\nimport org.apache.kafka.clients.consumer.KafkaConsumer;\nimport org.apache.kafka.common.serialization.StringDeserializer;\n\npublic class Main {\n    public static void main(String[] args) {\n        Properties config = new Properties();\n        config.put(\"bootstrap.servers\", \"localhost:9092\");\n        config.put(\"group.id\", \"study-syntax\");\n        config.put(\"enable.auto.commit\", \"false\");\n        config.put(\"auto.offset.reset\", \"earliest\");\n        config.put(\"key.deserializer\", StringDeserializer.class.getName());\n        config.put(\"value.deserializer\", StringDeserializer.class.getName());\n        try (KafkaConsumer<String, String> client = new KafkaConsumer<>(config)) {\n            client.subscribe(List.of(\"study-events\"));\n            for (int i = 0; i < 5; i++) {\n                var records = client.poll(Duration.ofSeconds(1));\n                for (var record : records) System.out.println(record.value());\n                if (!records.isEmpty()) client.commitSync();\n            }\n        }\n    }\n}",
+      "sequence": [
+        "IMPORTS: Duration, Properties, List, KafkaConsumer e desserializador.",
+        "TIPOS: generics do consumer precisam combinar com os desserializadores.",
+        "FUNÇÃO: try-with-resources garante close ao sair normalmente ou por erro.",
+        "FLUXO: configuração → subscribe → poll → processar todos os registros → commitSync.",
+        "ERRO: se processar falha, não avance deliberadamente o offset como se tivesse concluído; trate repetição com idempotência.",
+        "TESTES: em tópico descartável, produza mensagens, observe saída e reinicie com mesmo grupo; depois use outro grupo para verificar offsets independentes."
+      ],
+      "pitfalls": [
+        "Este exemplo não implementa shutdown por sinal, rebalance listener, DLQ ou retries.",
+        "Commit de offset não torna um efeito externo atômico.",
+        "O começo pode parecer vazio durante rebalance; não conclua perda de dados após um poll."
+      ],
+      "sourceUrl": "https://kafka.apache.org/41/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    },
+    {
+      "id": "r12",
+      "title": "Flutter: widget pequeno e teste de interação",
+      "language": "Dart",
+      "context": "Flutter 3.x / Dart 3.x. Crie projeto com flutter create staff_syntax. Substitua lib/main.dart pelo primeiro bloco e test/widget_test.dart pelo segundo. flutter_test deve estar em dev_dependencies com sdk: flutter, como no template. Execute flutter test; use flutter run para abrir o app.",
+      "code": "import 'package:flutter/material.dart';\n\nvoid main() => runApp(const MaterialApp(home: Counter()));\n\nclass Counter extends StatefulWidget {\n  const Counter({super.key});\n  @override\n  State<Counter> createState() => _CounterState();\n}\n\nclass _CounterState extends State<Counter> {\n  int count = 0;\n  @override\n  Widget build(BuildContext context) => Scaffold(\n    body: Center(child: ElevatedButton(\n      onPressed: () => setState(() { count += 1; }),\n      child: Text('Cliques: $count'),\n    )),\n  );\n}\n\n// test/widget_test.dart — arquivo separado\nimport 'package:flutter/material.dart';\nimport 'package:flutter_test/flutter_test.dart';\nimport 'package:staff_syntax/main.dart';\n\nvoid main() {\n  testWidgets('incrementa uma vez após toque', (tester) async {\n    await tester.pumpWidget(const MaterialApp(home: Counter()));\n    expect(find.text('Cliques: 0'), findsOneWidget);\n    await tester.tap(find.byType(ElevatedButton));\n    await tester.pump();\n    expect(find.text('Cliques: 1'), findsOneWidget);\n    expect(find.text('Cliques: 0'), findsNothing);\n  });\n}",
+      "sequence": [
+        "IMPORTS: material na UI; flutter_test no teste; nome do pacote vem de pubspec.yaml.",
+        "TIPOS: StatefulWidget é configuração; State guarda o contador.",
+        "FUNÇÃO: main chama runApp; build devolve a árvore a partir do estado.",
+        "FLUXO: toque → callback síncrono → setState → novo build.",
+        "ERRO: ao adicionar trabalho async, cancele no dispose quando possível e não atualize State desmontado.",
+        "TESTES: pumpWidget monta, tap interage, pump renderiza a atualização, find/expect verificam texto."
+      ],
+      "pitfalls": [
+        "Os dois blocos são arquivos diferentes; imports devem preceder declarações em Dart.",
+        "Se renomear o projeto, ajuste package:staff_syntax/main.dart.",
+        "Widget test não substitui testes de dispositivo, acessibilidade e integração."
+      ],
+      "sourceUrl": "https://docs.flutter.dev/cookbook/testing/widget/introduction",
+      "validation": "Revisão estática e consulta à documentação oficial em 26/10/2026. Este exemplo não foi executado com seu framework/runtime nesta validação."
+    }
+  ],
+  "protocols": [
+    {
+      "title": "Reset em 30 segundos quando a sintaxe some",
+      "steps": [
+        "0–5s: pare de digitar. Apoie os pés e faça uma expiração lenta, confortável, sem prender o ar. O objetivo é criar uma pausa; não garantir ausência de ansiedade.",
+        "5–10s: diga: “Vou reconstituir o contrato e escrever o menor passo verificável.” Nomeie entrada, saída e um exemplo.",
+        "10–20s: escreva apenas a estrutura: import provável → assinatura → guarda → coleção/estado → loop/ramificação → retorno. Deixe um comentário temporário onde faltar a API.",
+        "20–25s: associe necessidade a família: FIFO→deque; contagem→map; top-k→heap; HTTP→rota/modelo; evento→handler; assincronia→escopo/await.",
+        "25–30s: teste um caso mínimo. Se faltar um nome exato, explicite a intenção e use documentação/autocomplete somente se as regras permitirem. Não finja que pseudocódigo já executou.",
+        "Depois: registre o pequeno ponto que faltou, e não um julgamento global sobre sua capacidade. Pratique essa recuperação em simulações de baixa pressão."
+      ]
+    },
+    {
+      "title": "Treino de 20 minutos: recuperar, conferir, variar",
+      "steps": [
+        "0–2 min: escolha uma linguagem principal e um único padrão. Leia o contrato e diga o invariante em voz alta.",
+        "2–6 min: preencha 3 drills sem consultar. Anote confiança antes de revelar. O verificador confere lacunas textuais normalizadas, não compila nem prova correção semântica.",
+        "6–10 min: confira a referência, feche a resposta e reescreva o trecho inteiro. Execute no runtime apropriado quando disponível; diferencie erro de sintaxe, API e raciocínio.",
+        "10–15 min: mude uma exigência: vazio, duplicata, negativo, timeout, desmontagem ou falha parcial. Explique o que permanece verdadeiro.",
+        "15–18 min: simule explicar o código a outra pessoa. Diga contrato, escolha da estrutura, complexidade, erro e teste. Faça uma tentativa curta com cronômetro, sem virar corrida.",
+        "18–20 min: crie no máximo 3 cartões com pistas, não transcrições gigantes. Exemplo: “fila Python: módulo, remover esquerda, inserir direita”.",
+        "Revisão: retente aproximadamente no dia seguinte, alguns dias depois e na semana seguinte; ajuste pelos erros. Espaçamento é uma estratégia de prática, não promessa de lembrar tudo.",
+        "Quando acertar duas vezes em contextos diferentes, aumente a variação do problema em vez de apenas reler. Misture idiomas só depois de estabilizar o principal."
+      ]
+    },
+    {
+      "title": "Consulta permitida: recuperar uma API sem perder o raciocínio",
+      "steps": [
+        "Antes da etapa, confirme com recrutamento/entrevistador quais recursos são permitidos: documentação, autocomplete, internet, notas e IA são permissões diferentes.",
+        "No início, confirme linguagem, versão, dependências existentes, comando de execução e como rodar testes. Escreva esse contexto no rascunho permitido.",
+        "Ao esquecer um símbolo, fale a intenção precisa: “Preciso remover o elemento mais antigo em O(1); vou conferir o método desta deque.”",
+        "Se consulta for permitida, procure a documentação oficial da API e versão; confira assinatura, tipo de retorno, exceções e exemplo mínimo. Volte ao código com uma hipótese verificável.",
+        "Se consulta não for permitida, escreva pseudocódigo claramente identificado ou implemente um caminho simples que domine, explique o custo e confirme como o entrevistador prefere prosseguir.",
+        "Depois de recuperar a sintaxe, execute um exemplo pequeno e um caso de falha. Não altere o algoritmo inteiro por insegurança em um import.",
+        "Na revisão posterior, pratique a associação necessidade→família→símbolo. Memorize padrões curtos e a ordem de construção; não tente decorar todas as bibliotecas.",
+        "Durante avaliação real, respeite as regras combinadas e não use ajuda oculta. Estes drills são preparação autoral e não um gabarito de entrevista do Nubank."
+      ]
+    }
+  ]
+}

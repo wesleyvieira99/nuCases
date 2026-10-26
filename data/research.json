@@ -1,0 +1,558 @@
+{
+  "accessedAt": "2026-10-26",
+  "methodology": "Pesquisa pública focada em fontes oficiais e documentação primária; relatos são identificados como anedóticos. Anúncios dinâmicos foram consultados via índice de busca quando a leitura direta dependia de JavaScript. Esta seleção não cobre todos os comentários nem todas as vagas históricas.",
+  "sources": [
+    {
+      "id": "N01",
+      "title": "Processo de seleção de Software Engineers — Building Nubank",
+      "url": "https://building.nu.com/what-is-the-interview-process-like-for-software-engineers-at-nubank/",
+      "kind": "official",
+      "date": "2023-11-07",
+      "accessedAt": "2026-10-26",
+      "summary": "O guia descreve candidatura, exercício para casa, programação em dupla, arquitetura para senioridade elevada e avaliação técnica/cultural. Valoriza explicação do raciocínio, colaboração e escolhas fundamentadas.",
+      "caveat": "Guia geral com data de 2023. Não confirma ordem, duração nem formato da vaga específica em 2026."
+    },
+    {
+      "id": "N02",
+      "title": "Staff Software Engineer — vaga geral Brasil",
+      "url": "https://jobs.ashbyhq.com/nubank/4c43a07a-5afa-4d47-b075-5781bd738ea2",
+      "kind": "official",
+      "date": "Sem data de publicação confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Pede experiência em sistemas distribuídos e produtos complexos, iniciativas entre times, mentoria de seniores e comunicação. O anúncio menciona Clojure ensinada internamente, Kafka, CI/CD, backend e eventual contribuição em mobile/frontend.",
+      "caveat": "Anúncio oficial consultado por texto indexado; a página depende de JavaScript e a abertura da vaga deve ser reconfirmada. Requisitos desta equipe, sem generalização para todo Staff."
+    },
+    {
+      "id": "N03",
+      "title": "Staff Software Engineer — Lending Foundations",
+      "url": "https://jobs.ashbyhq.com/nubank/e8fe49b1-7d76-4995-b4b5-5a3fdaa641db?workplaceType=Hybrid",
+      "kind": "official",
+      "date": "Sem data de publicação confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Plataforma de crédito pede direção arquitetural duradoura, capacidade de alinhar squads, sistemas orientados a eventos e experiência funcional/JVM. Clojure, Datomic e Kafka aparecem como diferenciais; migrações e expansão entre países são contextos relevantes.",
+      "caveat": "Anúncio oficial consultado por texto indexado; a página depende de JavaScript e a abertura da vaga deve ser reconfirmada. Requisitos desta equipe, sem generalização para todo Staff."
+    },
+    {
+      "id": "N04",
+      "title": "Staff Software Engineer — BI Intelligence",
+      "url": "https://jobs.ashbyhq.com/nubank/b0d1a834-01ba-4f4e-8eef-5909cc1c7340",
+      "kind": "official",
+      "date": "Sem data de publicação confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Combina engenharia, SRE, plataformas de dados e IA: semântica de métricas, contratos, linhagem, qualidade, controle de acesso, observabilidade, SLOs e experiências analíticas conversacionais com avaliação.",
+      "caveat": "Anúncio oficial consultado por texto indexado; a página depende de JavaScript e a abertura da vaga deve ser reconfirmada. Requisitos desta equipe, sem generalização para todo Staff."
+    },
+    {
+      "id": "N05",
+      "title": "Staff Software Engineer — Credit Cards",
+      "url": "https://jobs.ashbyhq.com/nubank/bbdf8e6b-d4f1-4876-ad07-cc683a48fd32",
+      "kind": "official",
+      "date": "Sem data de publicação confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Destaca sistemas críticos de grande volume e baixa latência, gargalos de resiliência, transformações de plataformas, programação funcional e comunicação de estratégia técnica para negócio.",
+      "caveat": "Texto recuperado no índice de busca oficial; uma tentativa de abertura retornou 404. É evidência do anúncio indexado, não confirmação de vaga ainda aberta."
+    },
+    {
+      "id": "N06",
+      "title": "Staff Software Engineer — Mobile Platform",
+      "url": "https://jobs.ashbyhq.com/nubank/2204d723-3c2e-4b3f-ae69-cc0d142ae9f3",
+      "kind": "official",
+      "date": "Sem data de publicação confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Pede liderança técnica em mobile, Flutter e/ou Android/iOS, modularização, Server Driven UI, injeção de dependência, desempenho, migração de sistemas centrais e observabilidade mobile.",
+      "caveat": "Anúncio oficial consultado por texto indexado; a página depende de JavaScript e a abertura da vaga deve ser reconfirmada. Requisitos desta equipe, sem generalização para todo Staff."
+    },
+    {
+      "id": "N07",
+      "title": "Staff Software Engineer — Digital Experience Platform",
+      "url": "https://jobs.ashbyhq.com/nubank/c5d9d4bf-ed51-4fdc-b658-58056b3fec19",
+      "kind": "official",
+      "date": "Sem data de publicação confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Vaga de plataforma conecta design systems, componentes de interface e design-to-code a agentes e ferramentas de IA. Exige arquitetura de múltiplos componentes, integração de LLMs e coordenação com produto, design e engenharia.",
+      "caveat": "Anúncio oficial consultado por texto indexado; a página depende de JavaScript e a abertura da vaga deve ser reconfirmada. Requisitos desta equipe, sem generalização para todo Staff."
+    },
+    {
+      "id": "N08",
+      "title": "The value of canonicity — Building Nubank",
+      "url": "https://building.nu.com/the-value-of-canonicity/",
+      "kind": "official",
+      "date": "2020-10-30",
+      "accessedAt": "2026-10-26",
+      "summary": "Explica por que reduzir variação desnecessária de tecnologias facilita colaboração e mobilidade. Registra uso de Clojure, Kafka, Datomic, Scala e Flutter naquele momento.",
+      "caveat": "Artigo histórico sobre filosofia e stack de 2020; não é inventário completo da infraestrutura atual nem lista de exigências de entrevista."
+    },
+    {
+      "id": "N09",
+      "title": "Simplicity to scale systems — Building Nubank",
+      "url": "https://building.nu.com/simplicity-to-scale-systems-and-transform-software-engineering/",
+      "kind": "official",
+      "date": "2025-06-02",
+      "accessedAt": "2026-10-26",
+      "summary": "Discute complexidade organizacional, de equipe e individual. Defende clareza, revisão colaborativa e redução de dependências desnecessárias; relaciona Clojure e Datomic a auditabilidade e evolução.",
+      "caveat": "Reflete visão de engenharia publicada; não constitui rubrica oficial de avaliação de candidatos."
+    },
+    {
+      "id": "N10",
+      "title": "Functional programming with Clojure — Building Nubank",
+      "url": "https://building.nu.com/functional-programming-with-clojure/",
+      "kind": "official",
+      "date": "2023-03-28",
+      "accessedAt": "2026-10-26",
+      "summary": "Apresenta imutabilidade, funções de primeira classe e funções puras, além da interoperabilidade com Java e razões históricas para usar Clojure.",
+      "caveat": "Material introdutório e histórico. O uso interno da linguagem não implica obrigatoriedade de escolhê-la durante a entrevista."
+    },
+    {
+      "id": "N11",
+      "title": "A digital pine forest: the evergreen cache",
+      "url": "https://building.nu.com/the-evergreen-cache/",
+      "kind": "official",
+      "date": "2020-02-11",
+      "accessedAt": "2026-10-26",
+      "summary": "Caso técnico público sobre saldo derivado de eventos e evolução de cache diante de consumo de memória, com atenção à consistência e ao histórico de operações.",
+      "caveat": "Caso real de engenharia de 2020; não é um case confirmado de seleção nem especificação atual do produto."
+    },
+    {
+      "id": "N12",
+      "title": "Staff Security Engineer — IAM Brasil",
+      "url": "https://jobs.ashbyhq.com/nubank/3b43d8cc-494e-4e74-9426-fb869796de10",
+      "kind": "official",
+      "date": "Sem data de publicação confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Especialização exige IAM, OAuth/OIDC, SAML, WebAuthn/FIDO2, mTLS e PKI, código de produção, ameaça de identidade, migrações organizacionais, resposta a incidentes e mensuração de redução de risco.",
+      "caveat": "Anúncio oficial consultado por texto indexado; a página depende de JavaScript e a abertura da vaga deve ser reconfirmada. Requisitos desta equipe, sem generalização para todo Staff."
+    },
+    {
+      "id": "N13",
+      "title": "Staff Machine Learning Engineer — Recommendation Systems",
+      "url": "https://jobs.ashbyhq.com/nubank/da518919-9017-488b-9c05-9b50f8df8401",
+      "kind": "official",
+      "date": "Sem data de publicação confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Foca retrieval, ranking, otimização de objetivos e operação de ML em escala. Cita Python/Scala, treinamento, implantação, monitoramento, consistência de dados, experimentação, governança e resposta a incidentes.",
+      "caveat": "Anúncio oficial consultado por texto indexado; a página depende de JavaScript e a abertura da vaga deve ser reconfirmada. Requisitos desta equipe, sem generalização para todo Staff."
+    },
+    {
+      "id": "N14",
+      "title": "Staff Machine Learning Engineer — AI Core",
+      "url": "https://jobs.ashbyhq.com/nubank/ac003ba3-087b-4649-b5ee-c44109b29cc5/",
+      "kind": "official",
+      "date": "Sem data de publicação confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Pesquisa aplicada com Deep Learning e modelos fundacionais, incluindo Transformers/GNNs, Python e PyTorch/JAX/TensorFlow. Pede formulação de problemas, MLOps, latência, interpretabilidade, custo e experimentos A/B.",
+      "caveat": "Anúncio oficial consultado por texto indexado; a página depende de JavaScript e a abertura da vaga deve ser reconfirmada. Requisitos desta equipe, sem generalização para todo Staff."
+    },
+    {
+      "id": "N15",
+      "title": "Staff Software Engineer — Marketing Platforms",
+      "url": "https://jobs.ashbyhq.com/nubank/d01c1dbc-8802-47b1-9fc5-ee59a280729d",
+      "kind": "official",
+      "date": "Sem data de publicação confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Arquitetura entre Website Platform, Audience Manager e Campaign Manager; combina web, dados, identidade de audiência, experimentação e orquestração multicanal em vários mercados.",
+      "caveat": "Anúncio oficial consultado por texto indexado; a página depende de JavaScript e a abertura da vaga deve ser reconfirmada. Requisitos desta equipe, sem generalização para todo Staff."
+    },
+    {
+      "id": "N16",
+      "title": "Staff Software Engineer — Crypto, IC7",
+      "url": "https://jobs.ashbyhq.com/nubank/857cd146-2988-4c87-907d-558aa7001a72",
+      "kind": "official",
+      "date": "2026 no título; publicação sem data confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Especialização em produtos cripto, protocolos, dados onchain, transações, integrações de assinatura/custódia e contratos inteligentes. Exige sistemas distribuídos, fronteiras de confiança, threat modeling, operação e julgamento de produto.",
+      "caveat": "Anúncio oficial consultado por texto indexado; a página depende de JavaScript e a abertura da vaga deve ser reconfirmada. Requisitos desta equipe, sem generalização para todo Staff."
+    },
+    {
+      "id": "N17",
+      "title": "Staff Software Engineer — Payments Gateway",
+      "url": "https://jobs.ashbyhq.com/nubank/de1206d5-5b21-416b-a7fb-d0b9cc6511b9",
+      "kind": "official",
+      "date": "Sem data de publicação confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Aborda autorização, roteamento, clearing e settlement, integrações com adquirentes, ISO 8583, reversões, operação offline, conectividade de POS/SoftPOS e disseminação de conhecimento entre squads.",
+      "caveat": "Anúncio oficial consultado por texto indexado; a página depende de JavaScript e a abertura da vaga deve ser reconfirmada. Requisitos desta equipe, sem generalização para todo Staff."
+    },
+    {
+      "id": "N18",
+      "title": "Staff Software Engineer — Insurance",
+      "url": "https://jobs.ashbyhq.com/nubank/bf401757-0e3c-48f2-bd14-4aaf3f6f0dc6",
+      "kind": "official",
+      "date": "Sem data de publicação confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Combina evolução de arquitetura de serviços e adoção de ferramentas de IA no ciclo de desenvolvimento, com testes, validação, observabilidade, práticas auditáveis e colaboração entre áreas.",
+      "caveat": "Anúncio oficial consultado por texto indexado; a página depende de JavaScript e a abertura da vaga deve ser reconfirmada. Requisitos desta equipe, sem generalização para todo Staff."
+    },
+    {
+      "id": "T01",
+      "title": "Clojure — Learn: Syntax",
+      "url": "https://clojure.org/guides/learn/syntax",
+      "kind": "technical",
+      "date": "Documentação contínua; sem data editorial única",
+      "accessedAt": "2026-10-26",
+      "summary": "Referência oficial para literais, símbolos, keywords, coleções, avaliação prefixa e REPL. Útil para praticar sintaxe a partir de exemplos pequenos e conferíveis.",
+      "caveat": "Referência de linguagem; não comprova que Clojure será exigida na seleção."
+    },
+    {
+      "id": "T02",
+      "title": "Datomic — Transaction Data",
+      "url": "https://docs.datomic.com/transactions/transaction-data-reference.html",
+      "kind": "technical",
+      "date": "Documentação contínua; sem data editorial única",
+      "accessedAt": "2026-10-26",
+      "summary": "Documenta formas de dados transacionais, assert/retract, mapas, referências e identificadores temporários, com exemplos oficiais.",
+      "caveat": "Datomic possui APIs e modos de implantação distintos. Verifique a API escolhida antes de transformar exemplo em código executável."
+    },
+    {
+      "id": "T03",
+      "title": "Apache Kafka 4.1 — Design e delivery semantics",
+      "url": "https://kafka.apache.org/41/design/design/",
+      "kind": "technical",
+      "date": "Documentação da linha 4.1; sem data editorial única",
+      "accessedAt": "2026-10-26",
+      "summary": "Explica partições, offsets, replicação e semânticas de entrega. Transações Kafka podem coordenar leitura/escrita em tópicos; efeitos em sistemas externos exigem coordenação adicional.",
+      "caveat": "Não inferir exactly-once de ponta a ponta apenas por usar Kafka. A versão consultada foi fixada em 4.1."
+    },
+    {
+      "id": "T04",
+      "title": "PostgreSQL 18 — Transaction Isolation",
+      "url": "https://www.postgresql.org/docs/18/transaction-iso.html",
+      "kind": "technical",
+      "date": "Documentação da versão 18",
+      "accessedAt": "2026-10-26",
+      "summary": "Descreve anomalias de concorrência e níveis de isolamento, incluindo comportamento de Read Committed, Repeatable Read e Serializable.",
+      "caveat": "Comportamentos específicos do PostgreSQL; outras bases podem implementar níveis com detalhes distintos."
+    },
+    {
+      "id": "T05",
+      "title": "AWS Builders’ Library — Making retries safe with idempotent APIs",
+      "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/",
+      "kind": "technical",
+      "date": "Sem data editorial confirmada",
+      "accessedAt": "2026-10-26",
+      "summary": "Discute identificador de requisição fornecido pelo cliente, equivalência de respostas e atomicidade entre registrar idempotência e executar efeitos.",
+      "caveat": "Idempotência exige definir escopo, retenção e tratamento de conflitos; não equivale a armazenar uma chave em memória."
+    },
+    {
+      "id": "T06",
+      "title": "Google SRE Workbook — Implementing SLOs",
+      "url": "https://sre.google/workbook/implementing-slos/",
+      "kind": "technical",
+      "date": "2018 (livro); página sem data editorial única",
+      "accessedAt": "2026-10-26",
+      "summary": "Relaciona SLI, SLO e orçamento de erro a decisões de confiabilidade e negócio; propõe começar com objetivos úteis e refiná-los.",
+      "caveat": "Metodologia de referência externa. Metas numéricas devem derivar do caso e não ser copiadas sem contexto."
+    },
+    {
+      "id": "T07",
+      "title": "OWASP ASVS 5.0.0",
+      "url": "https://asvs.owasp.org/",
+      "kind": "technical",
+      "date": "2025-05-30 (versão 5.0.0)",
+      "accessedAt": "2026-10-26",
+      "summary": "Catálogo de requisitos para projetar, desenvolver e verificar controles de segurança de aplicações e serviços web.",
+      "caveat": "É referência técnica de segurança, não comprovação de conformidade regulatória nem checklist específico do Nubank."
+    },
+    {
+      "id": "T08",
+      "title": "Dunlosky et al. — Improving Students’ Learning",
+      "url": "https://www.psychologicalscience.org/publications/journals/pspi/learning-techniques.html",
+      "kind": "technical",
+      "date": "2013-01-07",
+      "accessedAt": "2026-10-26",
+      "summary": "Revisão de técnicas de estudo: prática de recuperação e prática distribuída recebem avaliação favorável em vários contextos; leitura repetida, isoladamente, tem menor utilidade.",
+      "caveat": "A pesquisa sustenta métodos de aprendizagem, não garante aprovação, memória perfeita ou eliminação de nervosismo."
+    },
+    {
+      "id": "T09",
+      "title": "Java 21 — BigDecimal",
+      "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/math/BigDecimal.html",
+      "kind": "technical",
+      "date": "Documentação Java SE 21",
+      "accessedAt": "2026-10-26",
+      "summary": "Define precisão decimal, escala e arredondamento; equals considera representação enquanto compareTo compara valor numérico. Divide pode exigir precisão ou arredondamento.",
+      "caveat": "A regra de arredondamento depende do domínio; HALF_EVEN ou HALF_UP não deve ser presumido universalmente para dinheiro."
+    },
+    {
+      "id": "R01",
+      "title": "Relato público: pair programming para posição IC7",
+      "url": "https://www.reddit.com/r/brdev/comments/1rsz5sp/algu%C3%A9m_j%C3%A1_fez_a_etapa_de_pair_programming_do/",
+      "kind": "report",
+      "date": "2026-03 (dia não confirmado)",
+      "accessedAt": "2026-10-26",
+      "summary": "Autor relata HR, system design e pair sem take-home, com sessão anunciada de 90 minutos. Comentários citam navegação em base existente, correção de bug e evolução de funcionalidade.",
+      "caveat": "Anedótico, identidade e contratação não verificadas. Comentários misturam IC4, IC6 e IC7. Permissão de IA mencionada não vale para outras entrevistas."
+    },
+    {
+      "id": "R02",
+      "title": "Relato público: mudança de formato em IC4",
+      "url": "https://www.reddit.com/r/brdev/comments/1s7idyr/entrevista_pair_programming_nubank/",
+      "kind": "report",
+      "date": "2026-03-30",
+      "accessedAt": "2026-10-26",
+      "summary": "Autor de IC4 descreve avaliação CodeSignal com evolução incremental e ausência de take-home em seu processo. Outros participantes relatam formatos diferentes para cargos distintos.",
+      "caveat": "Anedótico e não Staff. Serve para evidenciar variação, sem provar que o processo de Staff será igual."
+    },
+    {
+      "id": "R03",
+      "title": "Relato público: experiência de IC5 e dificuldade no pair",
+      "url": "https://www.reddit.com/r/brdev/comments/1sf56tc/experi%C3%AAncia_entrevista_nubank/",
+      "kind": "report",
+      "date": "2026-04 (dia não confirmado)",
+      "accessedAt": "2026-10-26",
+      "summary": "Autor relata CodeSignal, arquitetura, Talent Acquisition e pair sobre projeto existente. Menciona dificuldade para compreender código rapidamente e usar BigDecimal sob tempo.",
+      "caveat": "Anedótico e de candidato recusado; não há feedback técnico verificável que explique a decisão. Não inferir causa da reprovação."
+    },
+    {
+      "id": "R04",
+      "title": "Relato público: processo mobile sênior",
+      "url": "https://www.reddit.com/r/brdev/comments/1ridj2p/processo_seletivo_nubank_mobile_at%C3%A9_a_aprova%C3%A7%C3%A3o/",
+      "kind": "report",
+      "date": "2026 (dia não confirmado; processo relatado entre novembro e janeiro)",
+      "accessedAt": "2026-10-26",
+      "summary": "Autor descreve take-home mobile, extensão em pair, system design mobile, cultura e gestão. Cita contratos, paginação, BFF e Server Driven UI.",
+      "caveat": "Anedótico e de mobile sênior, sem verificação independente. É sinal de contexto por especialização, não roteiro oficial para Staff."
+    },
+    {
+      "id": "R05",
+      "title": "Relato público: pair com ferramenta de IA disponibilizada",
+      "url": "https://www.reddit.com/r/brdev/comments/1uey4i4/entrevista_nubank/",
+      "kind": "report",
+      "date": "2026-06-25",
+      "accessedAt": "2026-10-26",
+      "summary": "Autor relata implementações e teste unitário em pair, com uso de ferramenta de IA que teria sido disponibilizada naquela sessão.",
+      "caveat": "Anedótico e não Staff. Não transportar a autorização descrita para outro assessment; obter regras explícitas do recrutamento."
+    }
+  ],
+  "findings": [
+    {
+      "title": "Há um núcleo Staff comum",
+      "body": "Síntese das vagas oficiais: codificar continua importante, mas o escopo inclui decisões arquiteturais duradouras, impacto entre equipes, operação, mentoria e comunicação de valor para o negócio. Demonstre decisões, alternativas, métricas e como outras pessoas passaram a executar melhor.",
+      "sourceIds": [
+        "N02",
+        "N03",
+        "N04"
+      ]
+    },
+    {
+      "title": "Especializações mudam os requisitos",
+      "body": "Uma vaga Staff de IAM, ML, mobile ou pagamentos pode exigir profundidade de domínio diferente. Use o núcleo comum como base e escolha aprofundamentos após confirmar a vaga. O portal cobre famílias de atuação; isso não significa que todo requisito apareça numa única entrevista.",
+      "sourceIds": [
+        "N06",
+        "N12",
+        "N13",
+        "N17"
+      ]
+    },
+    {
+      "title": "Backend, plataforma e sistemas financeiros",
+      "body": "Lending e Credit Cards favorecem domínio de sistemas distribuídos, eventos, plataformas compartilhadas e migrações seguras. Payments Gateway acrescenta protocolos e ciclos específicos de pagamentos. Treine integridade, falhas parciais, reconciliação, evolução e rollout com invariantes.",
+      "sourceIds": [
+        "N03",
+        "N05",
+        "N17"
+      ]
+    },
+    {
+      "title": "Mobile é uma trilha própria",
+      "body": "A vaga de Mobile Platform lista Flutter/nativo, modularização, Server Driven UI, desempenho, migração e observabilidade. O relato mobile acrescenta sinais sobre contratos e BFF, mas é apenas uma experiência individual.",
+      "sourceIds": [
+        "N06",
+        "R04"
+      ]
+    },
+    {
+      "title": "Frontend e design systems têm contexto específico",
+      "body": "DXP relaciona design systems e componentes de UI a design-to-code e IA; Marketing Platforms envolve web e integração com audiências e campanhas. Não há evidência para chamar esses requisitos de universais em Staff backend.",
+      "sourceIds": [
+        "N07",
+        "N15"
+      ]
+    },
+    {
+      "title": "Dados, analytics e IA aplicada",
+      "body": "BI Intelligence pede governança, métricas semânticas, qualidade, lineage, SRE e avaliação de experiências com LLMs. Insurance acrescenta adoção responsável de IA no trabalho de engenharia. Prepare avaliação, autorização, observabilidade, custo e recuperação de falhas.",
+      "sourceIds": [
+        "N04",
+        "N18"
+      ]
+    },
+    {
+      "title": "ML precisa de profundidade além de APIs de LLM",
+      "body": "Recommendation Systems pede pipelines de recuperação/ranking e ciclo operacional de ML; AI Core pede modelagem e Deep Learning. Avaliação offline/online, qualidade dos dados, serving e experimentação são aprofundamentos coerentes com essas descrições.",
+      "sourceIds": [
+        "N13",
+        "N14"
+      ]
+    },
+    {
+      "title": "Segurança e cripto exigem experiência de domínio",
+      "body": "IAM destaca protocolos de identidade, PKI, modelagem de ameaças, migração e medição de risco. Crypto destaca protocolos, custódia, assinatura, confiança e operação de movimentação de ativos. Essas trilhas exigem aprofundamento próprio.",
+      "sourceIds": [
+        "N12",
+        "N16"
+      ]
+    },
+    {
+      "title": "O formato de seleção não é único",
+      "body": "O guia oficial de 2023 inclui take-home; relatos de 2026 descrevem também CodeSignal e pair em uma base existente. Prepare os dois formatos e confirme o convite atual: as fontes não permitem fixar sequência, duração ou número universal de etapas.",
+      "sourceIds": [
+        "N01",
+        "R01",
+        "R02",
+        "R03"
+      ]
+    },
+    {
+      "title": "Clojure é contexto relevante, não escolha obrigatória presumida",
+      "body": "O anúncio geral menciona ensino interno de Clojure; Lending pede experiência funcional/JVM e cita Clojure, Datomic e Kafka como diferenciais. Dominar bem uma linguagem permitida e demonstrar capacidade de aprender é uma estratégia de preparação, não uma regra garantida da seleção.",
+      "sourceIds": [
+        "N02",
+        "N03",
+        "N10",
+        "T01"
+      ]
+    },
+    {
+      "title": "Treine evolução de código sob restrições",
+      "body": "Os relatos justificam praticar leitura de projeto, execução de testes, diagnóstico de falhas e mudanças pequenas. O treino deve usar exercícios autorais e variantes inesperadas, sem depender de decorar um suposto case real.",
+      "sourceIds": [
+        "R01",
+        "R02",
+        "R03"
+      ]
+    },
+    {
+      "title": "Regras de IA são locais ao processo",
+      "body": "Alguns relatos descrevem IA disponibilizada. Isso não estabelece permissão geral. Confirme ferramenta, etapa, uso de documentação, ajuda externa e responsabilidade por validar o código antes da sessão.",
+      "sourceIds": [
+        "R01",
+        "R05"
+      ]
+    },
+    {
+      "title": "Simplicidade precisa de justificativa",
+      "body": "Publicações da engenharia valorizam reduzir complexidade e variação desnecessária. Em preparação, explique por que uma solução simples atende aos requisitos e em que ponto precisaria evoluir; evitar complexidade não significa ignorar riscos.",
+      "sourceIds": [
+        "N08",
+        "N09"
+      ]
+    },
+    {
+      "title": "Semântica de entrega é uma pergunta de fronteiras",
+      "body": "Kafka oferece mecanismos transacionais, mas um efeito externo não se torna exactly-once automaticamente. Declare a fronteira de garantia, a chave de deduplicação e como offsets, dados e efeitos são coordenados.",
+      "sourceIds": [
+        "T03",
+        "T05"
+      ]
+    },
+    {
+      "title": "Memória confiável requer recuperar e corrigir",
+      "body": "Use respostas sem consulta, testes de código e revisões espaçadas com feedback. Agendar 1, 3, 7 e 14 dias é uma heurística prática de treino, não uma fórmula científica individual nem promessa de nunca esquecer.",
+      "sourceIds": [
+        "T08"
+      ]
+    },
+    {
+      "title": "Limites da pesquisa",
+      "body": "Consulta pública realizada em 26/10/2026: amostra de anúncios oficiais, documentação e relatos acessíveis, sem exaustividade de comentários ou processos históricos. Não há acesso à rubrica interna nem confirmação da vaga específica. Cenários de treino são autorais e não previsão de perguntas.",
+      "sourceIds": [
+        "N01",
+        "N02",
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05"
+      ]
+    }
+  ],
+  "process": [
+    {
+      "title": "Alinhamento com recrutamento",
+      "description": "Identifique equipe, nível, país, linguagem permitida, ferramentas, formato e evidências de impacto esperadas. Prepare uma narrativa curta de trajetória e motivação.",
+      "evidence": "Guia oficial geral + preparação inferida das descrições de cargos.",
+      "sourceIds": [
+        "N01",
+        "N02",
+        "N03"
+      ]
+    },
+    {
+      "title": "Assessment online, quando existir",
+      "description": "Pratique tarefas incrementais, casos de borda e leitura de contrato sob tempo. A presença de CodeSignal foi relatada em alguns processos; não está confirmada para esta vaga.",
+      "evidence": "Relatos públicos de 2026, não regra universal.",
+      "sourceIds": [
+        "R01",
+        "R02",
+        "R03"
+      ]
+    },
+    {
+      "title": "Take-home, quando existir",
+      "description": "Entregue execução reproduzível, testes relevantes, decisões e limitações claras. O prazo e o tamanho reais devem vir do convite.",
+      "evidence": "Guia oficial de 2023 e relato mobile posterior.",
+      "sourceIds": [
+        "N01",
+        "R04"
+      ]
+    },
+    {
+      "title": "Pair programming ou evolução de projeto",
+      "description": "Leia o código, rode testes, verbalize hipóteses, faça uma mudança pequena e valide. Prepare tanto evolução do próprio exercício quanto manutenção de uma base nova.",
+      "evidence": "Formato de colaboração oficial; variantes de base existente são anedóticas.",
+      "sourceIds": [
+        "N01",
+        "R01",
+        "R03",
+        "R04"
+      ]
+    },
+    {
+      "title": "Arquitetura / system design",
+      "description": "Clarifique objetivo, carga e restrições; modele dados e contratos; explique decisões, riscos, falhas, operação e evolução. A profundidade deve seguir a especialização.",
+      "evidence": "Guia oficial e requisitos de diferentes vagas Staff.",
+      "sourceIds": [
+        "N01",
+        "N03",
+        "N04",
+        "N06",
+        "N12",
+        "N13"
+      ]
+    },
+    {
+      "title": "Discussão Staff de projeto e influência",
+      "description": "Prepare histórias reais sobre decisões ambíguas, migrações, incidentes, discordâncias, mentoria e resultado de negócio. Um deep dive é treino útil, mesmo sem etapa separada confirmada.",
+      "evidence": "Inferência a partir do escopo das vagas, não etapa oficialmente garantida.",
+      "sourceIds": [
+        "N02",
+        "N03",
+        "N05",
+        "N12"
+      ]
+    },
+    {
+      "title": "Valores, colaboração e gestão",
+      "description": "Use exemplos concretos com sua contribuição, alternativas, resultados e aprendizados. Pergunte como o sucesso e a autonomia são avaliados na equipe.",
+      "evidence": "Guia oficial inclui Talent Acquisition; conversa com gestão aparece em relatos.",
+      "sourceIds": [
+        "N01",
+        "R04"
+      ]
+    }
+  ],
+  "recruiterQuestions": [
+    "Qual é a equipe, a especialização e o nível exato desta vaga? Staff e Senior Staff têm escopos distintos aqui?",
+    "Quais etapas compõem este processo específico e em que ordem? Há avaliação online, take-home ou ambos?",
+    "No pair, vou evoluir meu próprio exercício ou uma base fornecida? Qual linguagem, versão e ambiente estarão disponíveis?",
+    "Posso consultar documentação, usar autocomplete e ferramentas de IA? Quais são os limites de cada etapa?",
+    "Qual a duração prevista de cada sessão e existe tempo reservado para perguntas?",
+    "A arquitetura será backend, mobile, frontend, dados, ML, segurança ou plataforma? Há domínio que eu deva estudar antes?",
+    "Quais sinais distinguem uma boa avaliação Staff de uma boa avaliação Senior nesta equipe?",
+    "Haverá conversa aprofundada sobre projetos anteriores, RFCs, incidentes ou influência entre equipes?",
+    "Em quais idiomas ocorrerão as entrevistas e a comunicação cotidiana da função?",
+    "Quais materiais e adaptações de acessibilidade posso solicitar para realizar as etapas nas condições adequadas?",
+    "Quais requisitos da descrição são essenciais no primeiro dia e quais podem ser aprendidos durante o onboarding?",
+    "Quais resultados a equipe espera da pessoa contratada nos primeiros seis e doze meses?"
+  ]
+}

@@ -1,0 +1,2053 @@
+{
+  "modules": [
+    {
+      "id": "m01",
+      "title": "Fundamentos: pensar antes de escrever código",
+      "level": "Base",
+      "summary": "Contratos, invariantes, custo e testes: o alicerce que continua sendo cobrado em problemas complexos.",
+      "sourceUrls": [
+        "https://docs.python.org/3/library/collections.html"
+      ],
+      "lessons": [
+        {
+          "title": "Contrato → exemplo → invariante → implementação",
+          "body": "Antes de escolher uma estrutura, transforme a descrição em entradas, saídas e regras observáveis. Um invariante é uma propriedade que deve continuar verdadeira após cada operação: saldo disponível não negativo, soma de lançamentos igual a zero, ou cursor que sempre avança. Separe o que foi pedido do que você está assumindo. Faça uma solução correta para um exemplo pequeno; depois aumente a escala. Durante a entrevista, narrar esse raciocínio permite que o entrevistador corrija uma hipótese cedo. Um algoritmo elegante que resolve outro contrato continua errado.",
+          "example": "Transferir 300 centavos de A=500 para B=100 produz A=200 e B=400; A+B permanece 600. Entrada negativa deve falhar antes de qualquer mudança.",
+          "exercise": "Defina contrato e cinco casos para saque. O saque de zero é válido? Existe limite? Qual moeda? O que retornar se a conta não existir?",
+          "answer": "Uma resposta completa define unidade monetária, saldo insuficiente, valor inválido, conta ausente e efeito atômico. Zero pode ser rejeitado ou aceito, desde que o contrato seja explícito e testado.",
+          "checklist": [
+            "Declarar unidade",
+            "Escrever ao menos um invariante",
+            "Separar erro de domínio de falha de infraestrutura"
+          ]
+        },
+        {
+          "title": "Big O com o custo que o sistema realmente paga",
+          "body": "Conte operações em função das variáveis relevantes: n registros, u chaves distintas, k resultados, p partições. Busca em hash costuma ter custo esperado constante, mas isso não torna uma operação remota barata. Diga se a complexidade é média, pior caso ou amortizada. Inclua memória auxiliar, volume de rede e tamanho de payload quando fizer diferença. Em Staff, uma ordenação local de mil itens pode ser irrelevante diante de um milhão de chamadas ao banco. Otimize o gargalo medido ou estimado, não o símbolo mais assustador.",
+          "example": "N consultas para N transações geram um problema N+1. Uma consulta em lote pode reduzir viagens de rede sem alterar o O(n) do processamento.",
+          "exercise": "Compare ordenar 10 milhões de valores para obter os 10 maiores com manter um heap de tamanho 10.",
+          "answer": "Ordenar custa O(n log n), com memória dependente da implementação. Heap limitado custa O(n log k), mais O(k log k) se a saída precisar ordenada, e O(k) de memória auxiliar.",
+          "checklist": [
+            "Definir n e k",
+            "Explicar memória",
+            "Separar CPU de I/O"
+          ]
+        },
+        {
+          "title": "Teste de fronteiras e propriedades",
+          "body": "Exemplos verificam casos conhecidos; propriedades verificam relações que devem valer em muitas entradas. Exercite vazio, um item, duplicação, extremos, ordem diferente, falha parcial e concorrência. Antes de adicionar mocks, pergunte qual contrato o teste protege. Um teste que apenas confirma que um método interno foi chamado é frágil quando o comportamento relevante é saldo correto. Para dinheiro, propriedades fortes incluem conservação, não negatividade quando exigida e repetição sem novo efeito para a mesma operação.",
+          "example": "Propriedade de merge de intervalos: a união representada antes e depois deve ser igual; os intervalos resultantes não devem se sobrepor.",
+          "exercise": "Crie um contraexemplo para uma transferência que atualiza origem, lança exceção e nunca atualiza destino.",
+          "answer": "Com A=500, B=100 e valor=300, o estado A=200/B=100 perde 300. O teste deve demonstrar rollback integral ou uma estratégia de reconciliação que não confunda confirmação com estado parcial.",
+          "checklist": [
+            "Fronteira vazia",
+            "Contraexemplo de falha",
+            "Propriedade de domínio"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m02",
+      "title": "Algoritmos que você consegue reconstruir",
+      "level": "Base → avançado",
+      "summary": "Reconheça famílias de problemas sem memorizar soluções cegamente.",
+      "sourceUrls": [
+        "https://docs.python.org/3/library/heapq.html",
+        "https://docs.python.org/3/library/collections.html"
+      ],
+      "lessons": [
+        {
+          "title": "Hash map, dois ponteiros e janela deslizante",
+          "body": "Use mapa quando precisa relacionar uma chave a informação já vista. Dois ponteiros funcionam quando mover uma borda elimina opções de forma justificável; isso exige uma propriedade como ordenação. Janela deslizante mantém estatísticas de um intervalo e atualiza ao incluir ou remover elementos. A condição de validade precisa ser monotônica para certas versões de janela: somas com números negativos, por exemplo, quebram argumentos usados com positivos. Explique o significado de cada variável, não apenas o movimento dos índices.",
+          "example": "Em longest substring sem repetição, last[c] guarda a última posição. Ao encontrar c, left=max(left,last[c]+1); left nunca volta.",
+          "exercise": "Por que usar left=last[c]+1 sem max falha em \"abba\"?",
+          "answer": "Depois do segundo b, left=2. Ao ler a no índice 3, last[a]=0; atribuir 1 reabre uma janela com dois b. O max preserva a borda válida.",
+          "checklist": [
+            "Explicar estado da janela",
+            "Provar avanço",
+            "Testar repetição fora da janela"
+          ]
+        },
+        {
+          "title": "Heap, intervalos e busca binária",
+          "body": "Heap organiza prioridade, não a ordenação completa da coleção. Em top-k, mantenha somente os candidatos necessários. Para intervalos, defina se limites são fechados ou semiabertos: [1,2) e [2,3) não se sobrepõem. Busca binária deve operar sobre um predicado monotônico ou uma sequência ordenada. Escreva o significado de lo e hi; por exemplo, intervalo de candidatos [lo,hi). Essa definição evita corrigir índices por tentativa e erro.",
+          "example": "Para primeiro valor >= alvo: se a[mid] < alvo, lo=mid+1; caso contrário hi=mid. Termine com lo==hi.",
+          "exercise": "Execute à mão para [], [2], [1,2,2,4] e alvo 2; depois explique como achar o primeiro índice >2.",
+          "answer": "Resultados lower_bound: 0, 0 e 1. Para upper_bound, avance lo quando a[mid] <= alvo. O resultado na terceira entrada é 3.",
+          "checklist": [
+            "Definir extremos",
+            "Definir predicado",
+            "Verificar duplicatas"
+          ]
+        },
+        {
+          "title": "Grafos, programação dinâmica e a escolha correta",
+          "body": "BFS resolve distâncias em número de arestas quando os pesos são uniformes. Dijkstra requer pesos não negativos. Ordenação topológica resolve dependências em DAGs; se sobra vértice não processado, existe ciclo. Programação dinâmica precisa de estado suficiente, transição e caso base; o estado não deve esconder informação que muda o futuro. Antes de usar DP, exponha a recorrência e desenhe um exemplo pequeno. Em qualquer família, uma prova curta de correção vale mais que citar o nome do algoritmo.",
+          "example": "Para dependências de deploy, in_degree mede pré-requisitos ainda pendentes. Libere um serviço apenas quando esse contador atingir zero.",
+          "exercise": "Você precisa detectar um ciclo de transferências suspeitas e também achar a menor rota entre contas. A mesma implementação serve?",
+          "answer": "Não automaticamente. Detecção de ciclo dirigido pode usar DFS com cores ou ordenação topológica; menor rota sem peso usa BFS. Defina primeiro se o grafo é dirigido e o que cada peso representa.",
+          "checklist": [
+            "Direção e pesos explícitos",
+            "Caso base",
+            "Prova do estado suficiente"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m03",
+      "title": "Python para raciocínio e código sob pressão",
+      "level": "Base → intermediário",
+      "summary": "Uma linguagem principal dominada vale mais do que cinco sintaxes decoradas superficialmente.",
+      "sourceUrls": [
+        "https://docs.python.org/3/library/collections.html",
+        "https://docs.python.org/3/library/asyncio-sync.html"
+      ],
+      "lessons": [
+        {
+          "title": "Esqueleto mínimo e coleções",
+          "body": "Treine escrever de memória uma função com tipagem, teste simples e tratamento de erro. list representa sequência, dict representa associação, set representa pertencimento e deque representa fila. Valores mutáveis podem ser compartilhados por referência: [[0]*3]*3 repete a mesma lista interna. Não use lista mutável como argumento padrão. Um type hint documenta e ajuda ferramentas; ele não valida automaticamente o payload recebido em runtime.",
+          "example": "from collections import deque\nq = deque([\"origem\"])\nvisited = {\"origem\"}\nwhile q:\n    current = q.popleft()",
+          "exercise": "Escreva uma função que agrupe transações por conta sem compartilhar listas entre contas.",
+          "answer": "Crie um dict novo dentro da função; para cada evento use groups.setdefault(account, []).append(event). defaultdict(list) também serve, pois cria listas por chave.",
+          "checklist": [
+            "Imports mínimos",
+            "Sem default mutável",
+            "Teste de aliasing"
+          ]
+        },
+        {
+          "title": "Erros, dinheiro e fronteiras",
+          "body": "Converta entradas externas em representações internas explícitas. Centavos inteiros simplificam invariantes quando a escala monetária é fixa; outras moedas e cálculos podem exigir decimal e uma política de arredondamento. float não representa exatamente todos os decimais. Não capture Exception para retornar sucesso. Diferencie input inválido, regra de negócio negada e indisponibilidade transitória. Inclua causa e contexto útil no erro, sem registrar segredos.",
+          "example": "if amount <= 0: raise ValueError(\"amount must be positive\")\nif balance < amount: return {\"status\": \"insufficient_funds\"}",
+          "exercise": "Uma função recebe \"10.005\" e precisa cobrar em centavos. O que falta antes de converter?",
+          "answer": "Falta decidir moeda, escala e regra de arredondamento, além de validar formato. Truncar silenciosamente ou usar round(float(...)*100) pode contrariar o contrato.",
+          "checklist": [
+            "Unidade explícita",
+            "Erro não vira sucesso",
+            "Arredondamento documentado"
+          ]
+        },
+        {
+          "title": "Async sem trabalho ilimitado",
+          "body": "await permite que outra tarefa avance enquanto a operação aguarda; isso não acelera automaticamente CPU. Controle o número de operações em voo e a fila, aplique timeout e trate cancelamento. Um semáforo limita a seção protegida, mas criar milhões de tasks antes dele ainda consome memória. Um grupo fixo de workers pode consumir uma entrada progressivamente. Locks de asyncio protegem tarefas no mesmo modelo assíncrono, não threads de sistema.",
+          "example": "O lab de bounded_map mantém quatro workers para cem itens, preserva ordem e cancela os workers restantes quando um deles falha.",
+          "exercise": "Por que retry imediato em cada chamada de um fan-out de 100 requests pode piorar uma queda?",
+          "answer": "Multiplica carga exatamente durante a falha. Use limite de concorrência, orçamento total de tempo, retries limitados com jitter e critério de retry; a operação também precisa ser segura para repetir.",
+          "checklist": [
+            "Limite de tasks",
+            "Timeout global",
+            "Cancelar e aguardar encerramento"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m04",
+      "title": "Kotlin e Java: tipos, dinheiro e concorrência",
+      "level": "Intermediário",
+      "summary": "Modele estados válidos e saiba explicar o que a JVM garante e o que ela não garante.",
+      "sourceUrls": [
+        "https://kotlinlang.org/docs/data-classes.html",
+        "https://kotlinlang.org/docs/sealed-classes.html",
+        "https://kotlinlang.org/docs/coroutines-basics.html",
+        "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/math/BigDecimal.html"
+      ],
+      "lessons": [
+        {
+          "title": "Null safety e resultados explícitos",
+          "body": "Use tipos para representar sucesso, rejeição e estados intermediários. Uma sealed interface permite tratar variantes em when; data class ajuda a representar valores. val impede reatribuir uma referência, mas não torna qualquer objeto referenciado imutável. copy é superficial: coleções mutáveis aninhadas podem continuar compartilhadas. Em fronteiras Java, JSON ou banco, ainda há validação a fazer. Evite !! como substituto para entender ausência.",
+          "example": "sealed interface Outcome\ndata class Approved(val cents: Long): Outcome\ndata class Rejected(val reason: String): Outcome",
+          "exercise": "Modele Pending, Approved e Declined sem permitir approved=true e declineReason preenchido ao mesmo tempo.",
+          "answer": "Use uma hierarquia selada com payload específico por estado. O compilador ajuda a cobrir cada variante; o parser ainda deve rejeitar dados externos incoerentes.",
+          "checklist": [
+            "Estados impossíveis reduzidos",
+            "when exaustivo",
+            "Ausência tratada"
+          ]
+        },
+        {
+          "title": "Precisão e igualdade numérica",
+          "body": "Escolha centavos inteiros quando a unidade é fixa e verifique overflow em operações de tamanho limitado. BigDecimal permite escala e arredondamento explícitos. Construa valores monetários a partir de texto ou inteiros adequados. equals considera escala; compareTo representa comparação numérica. A política de rateio deve preservar o total: distribuir restos de centavos de forma determinística evita criar ou perder dinheiro. O critério de quem recebe o resto é uma decisão de produto auditável.",
+          "example": "new BigDecimal(\"1.0\").equals(new BigDecimal(\"1.00\")) é false; compareTo retorna 0.",
+          "exercise": "Distribua R$10,00 entre três destinatários sem perder um centavo.",
+          "answer": "Em centavos, 1000/3 produz quociente 333 e resto 1. Entregue [334,333,333] usando uma ordem estável documentada.",
+          "checklist": [
+            "Sem double para moeda",
+            "Overflow considerado",
+            "Soma dos rateios preservada"
+          ]
+        },
+        {
+          "title": "Threads, corrotinas e seção crítica",
+          "body": "Concorrência significa sobreposição de progresso; paralelismo significa execução simultânea. suspend não cria sozinho execução paralela. Corrotinas precisam de escopo e política de cancelamento; bloquear uma thread de execução com I/O pode impedir outras tarefas de avançar. Para estado compartilhado, pense na operação inteira: verificar saldo e debitar deve ser atômico. Um mapa concorrente não torna uma sequência de múltiplos passos atômica. Locks locais também não coordenam várias instâncias de um serviço.",
+          "example": "O lab Kotlin serializa transferência e registro de idempotência no mesmo monitor; isso funciona somente dentro daquela instância.",
+          "exercise": "Trocar HashMap por ConcurrentHashMap resolve duas threads debitando o último saldo?",
+          "answer": "Não, se a sequência continua get → check → put. É necessário sincronizar o invariante completo, usar operação atômica apropriada ou transação no armazenamento compartilhado.",
+          "checklist": [
+            "Escopo do lock",
+            "Cancelamento",
+            "Não confundir thread-safe com transação"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m05",
+      "title": "Clojure e programação funcional",
+      "level": "Base → avançado",
+      "summary": "Aprenda a ler formas, separar efeitos e raciocinar sobre transformações de estado.",
+      "sourceUrls": [
+        "https://clojure.org/reference/reader",
+        "https://clojure.org/reference/atoms",
+        "https://www.clojure.org/reference/reducers"
+      ],
+      "lessons": [
+        {
+          "title": "Ler Clojure da borda para o centro",
+          "body": "Uma lista em posição de chamada tem operador primeiro: (+ 2 3). Vetores normalmente representam coleções indexadas e bindings; maps representam associações; keywords são chaves práticas. Aprenda defn, let, if, cond, map, filter, reduce, assoc e update antes de macros avançadas. Leia uma expressão por seus dados de entrada e resultado. As funções da biblioteca não precisam transformar tudo em estado global.",
+          "example": "(defn total [xs] (reduce + 0 xs))\n(let [account {:balance 100}] (update account :balance - 20))",
+          "exercise": "Converta um loop que soma valores aprovados numa transformação funcional.",
+          "answer": "(reduce + 0 (map :cents (filter #(= :approved (:status %)) events))). Primeiro filtre, depois extraia, por fim agregue; o 0 resolve coleção vazia.",
+          "checklist": [
+            "Parênteses por forma",
+            "let local",
+            "Caso vazio no reduce"
+          ]
+        },
+        {
+          "title": "Núcleo funcional e borda com efeitos",
+          "body": "Uma função pura calcula o resultado a partir dos argumentos e não altera o mundo externo. Tempo, aleatoriedade, banco e rede devem entrar como dados ou ficar numa borda explícita. Esse desenho facilita testar regras sem mocks extensos. Imutabilidade reduz interferência acidental, mas não elimina a necessidade de transações quando há múltiplos escritores. Uma função pode devolver novo estado e eventos pretendidos; a camada de aplicação decide como persistir ambos com atomicidade.",
+          "example": "(decide state command) → {:new-state ... :events [...]}; persistência e publicação ficam fora de decide.",
+          "exercise": "Como testar uma regra que expira autorização após 15 minutos sem esperar 15 minutos?",
+          "answer": "Passe now como argumento e use timestamps fixos no teste. Teste imediatamente antes, no limite e imediatamente depois; explicite inclusividade do limite.",
+          "checklist": [
+            "Tempo injetado",
+            "Sem I/O em regra",
+            "Mesmo input, mesmo output"
+          ]
+        },
+        {
+          "title": "Atoms e atualização segura",
+          "body": "Um atom coordena atualização de um estado independente em memória. A função passada a swap! pode ser reexecutada em caso de competição; por isso deve ser livre de efeitos externos. Se você enviar email dentro dela, um retry pode repetir o envio. Para invariantes relacionados, um único mapa de estado pode ser mais simples do que vários atoms desconectados. O atom não fornece persistência nem coordenação entre processos.",
+          "example": "(swap! state apply-event event) atualiza um mapa inteiro. apply-event valida e calcula; não faz request HTTP.",
+          "exercise": "Um atom guarda saldo e outro guarda IDs processados. Que falha pode aparecer?",
+          "answer": "Um crash ou interleaving pode mudar um sem o outro, permitindo dupla aplicação ou marcação sem efeito. Coloque o invariante num estado atômico único ou num armazenamento transacional adequado.",
+          "checklist": [
+            "swap! sem efeito",
+            "Um limite atômico coerente",
+            "Persistência separada"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m06",
+      "title": "TypeScript e contratos em runtime",
+      "level": "Intermediário",
+      "summary": "Tipos úteis, estados discriminados, promises e limites de confiança.",
+      "sourceUrls": [
+        "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+      ],
+      "lessons": [
+        {
+          "title": "unknown, narrowing e união discriminada",
+          "body": "TypeScript ajuda antes da execução, mas seus tipos não validam automaticamente JSON recebido. Use unknown na fronteira e refine com verificações ou um schema. Uma união discriminada usa um campo literal, como status, para selecionar propriedades válidas. any remove proteções úteis; uma assertion as Payment não converte nem valida o objeto. Represente falhas de domínio no contrato para que clientes tratem cada resultado conscientemente.",
+          "example": "type Result = {ok:true; cents:bigint} | {ok:false; reason:string};\nif (r.ok) console.log(r.cents);",
+          "exercise": "Uma API retorna {\"ok\":true,\"cents\":\"abc\"}. O tipo TypeScript declarado impede que isso aconteça?",
+          "answer": "Não. É preciso validar o objeto em runtime, verificar o formato e converter a unidade monetária com limites definidos.",
+          "checklist": [
+            "unknown na fronteira",
+            "Sem cast como validação",
+            "Tratamento de todas variantes"
+          ]
+        },
+        {
+          "title": "Promises, ordem e backpressure",
+          "body": "Promise.all rejeita quando uma das promises rejeita, mas não cancela automaticamente operações já iniciadas. Limite fan-out, estabeleça orçamento de tempo e decida se o resultado é tudo-ou-nada ou parcial. Preserve ordem de saída quando o contrato exigir, mesmo que as conclusões ocorram fora de ordem. AbortSignal pode comunicar cancelamento apenas às APIs que o respeitam. Limitar concorrência e limitar taxa por segundo são problemas diferentes.",
+          "example": "Quatro workers consomem índices de uma lista. Cada um escreve results[index], mantendo a ordem lógica apesar da duração variável.",
+          "exercise": "Por que await items.forEach(async item => ...) não aguarda o lote?",
+          "answer": "forEach não agrega os valores retornados pelo callback. Use for...of com await para serializar ou um mecanismo explícito de promises e concorrência limitada.",
+          "checklist": [
+            "Drenar operações iniciadas",
+            "Política de erro",
+            "Concorrência ≠ taxa"
+          ]
+        },
+        {
+          "title": "Dinheiro, JSON e APIs duráveis",
+          "body": "BigInt representa inteiros grandes, mas JSON.stringify não serializa BigInt diretamente. Defina representação de transporte, como string decimal de centavos, com validação. Ids opacos também devem permanecer strings quando números podem exceder precisão segura. Compatibilidade de API exige distinguir campo ausente, null e valor vazio. Uma mudança aparentemente pequena em enum ou obrigatoriedade pode quebrar consumidores.",
+          "example": "Domínio: {cents: 1200n}; transporte: {amountMinor: \"1200\", currency: \"BRL\"}.",
+          "exercise": "Como adicionar novo status sem derrubar clientes antigos?",
+          "answer": "Planeje versões ou tolerância explícita a desconhecidos, teste contratos dos consumidores e publique documentação de migração. Uma união fechada local não resolve compatibilidade de rede por si só.",
+          "checklist": [
+            "Representação de transporte",
+            "Limites de número",
+            "Compatibilidade observada"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m07",
+      "title": "Patterns, DDD e desenho evolutivo",
+      "level": "Intermediário → Staff",
+      "summary": "Patterns servem à mudança real do domínio; não são uma lista de classes obrigatórias.",
+      "sourceUrls": [
+        "https://martinfowler.com/bliki/BoundedContext.html"
+      ],
+      "lessons": [
+        {
+          "title": "Strategy, Adapter e State com propósito",
+          "body": "Strategy troca um algoritmo ou política; Adapter traduz uma interface externa; State explicita comportamento conforme a fase do processo. Em linguagens funcionais, Strategy pode ser somente uma função. Não comece com AbstractFactoryFactory sem uma variação concreta. Diga qual mudança o pattern torna barata e qual complexidade adiciona. Um anti-pattern comum é espalhar condicionais do mesmo estado por várias camadas, criando transições inconsistentes.",
+          "example": "Uma política de tarifa recebe contexto e retorna centavos. O adapter do provedor converte seu erro HTTP para erro de domínio.",
+          "exercise": "Desenhe um pagamento com created, authorized, captured e canceled. Quais transições devem falhar?",
+          "answer": "Capturar antes de autorizar e cancelar após captura podem ser proibidos pelo contrato. Se estorno existe, modele operação própria em vez de reescrever a história como canceled.",
+          "checklist": [
+            "Motivo da abstração",
+            "Alternativa simples",
+            "Transições explícitas"
+          ]
+        },
+        {
+          "title": "Bounded context e aggregate",
+          "body": "Um bounded context delimita um modelo e seu vocabulário. Cliente em risco, atendimento e faturamento pode representar necessidades diferentes. Um aggregate protege invariantes dentro de uma fronteira de consistência; ele não deve virar todo o banco. Identifique comandos, eventos e a autoridade sobre cada dado. Entre contextos, traduza modelos e estabeleça contratos. Dividir contextos não exige imediatamente dividir deploys.",
+          "example": "CreditDecision conhece score e política; Ledger conhece lançamentos. Alterar o score não deve reescrever o histórico contábil.",
+          "exercise": "Conta, cartão e cliente precisam morar no mesmo serviço porque estão relacionados?",
+          "answer": "Não necessariamente. Analise invariantes, frequência de mudança, propriedade de dados e dependências. Relacionamento de negócio não implica uma transação única ou um serviço por entidade.",
+          "checklist": [
+            "Vocabulário do contexto",
+            "Invariante local",
+            "Dono do dado"
+          ]
+        },
+        {
+          "title": "Monólito modular, microsserviços e dívida",
+          "body": "Compare opções pelo custo total de operação e evolução. Um monólito modular pode preservar fronteiras sem impor rede, deploy distribuído e tracing complexo. Microsserviços podem ajudar autonomia, isolamento e escala, mas exigem contratos e responsabilidade operacional. Event sourcing preserva eventos como fonte de verdade; não é sinônimo de emitir mensagens. CQRS separa modelos de escrita e leitura; não exige necessariamente bancos distintos. Escolha o menor desenho que atende as restrições atuais e deixa uma migração viável.",
+          "example": "Comece um novo domínio com módulo bem isolado; extraia serviço quando autonomia de deploy, carga ou ownership justificar.",
+          "exercise": "Prepare um ADR de uma página comparando monólito modular e microsserviços para uma equipe de seis pessoas.",
+          "answer": "Inclua contexto, duas opções, decisão, consequências, custos operacionais e gatilho de revisão. Evite escolher pela popularidade da tecnologia.",
+          "checklist": [
+            "Opções comparáveis",
+            "Custo operacional",
+            "Gatilho para rever decisão"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m08",
+      "title": "SQL, índices e transações",
+      "level": "Base → avançado",
+      "summary": "Consistência precisa de contratos de escrita; performance precisa de planos e cardinalidade.",
+      "sourceUrls": [
+        "https://www.postgresql.org/docs/current/transaction-iso.html",
+        "https://www.postgresql.org/docs/current/indexes-unique.html",
+        "https://www.postgresql.org/docs/current/tutorial-window.html",
+        "https://www.postgresql.org/docs/17/explicit-locking.html"
+      ],
+      "lessons": [
+        {
+          "title": "Modelagem, joins e funções de janela",
+          "body": "Escolha chaves, cardinalidade e restrições antes da consulta sofisticada. Um join um-para-muitos pode multiplicar valores agregados; agregue no nível certo ou use EXISTS quando só precisa verificar presença. GROUP BY reduz grupos a linhas; funções de janela mantêm linhas e calculam sobre uma partição. Para saldo acumulado, defina ordem total e frame, incluindo um desempate estável quando timestamps coincidem.",
+          "example": "SUM(amount) OVER (PARTITION BY account_id ORDER BY occurred_at,id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW).",
+          "exercise": "Por que agrupar faturas por cliente depois de juntar faturas a itens pode inflar o total de faturas?",
+          "answer": "Cada fatura aparece uma vez por item. Agregue itens separadamente, use a granularidade correta ou evite somar novamente um valor já da fatura.",
+          "checklist": [
+            "Granularidade declarada",
+            "Desempate estável",
+            "NULL considerado"
+          ]
+        },
+        {
+          "title": "Índice útil e leitura de plano",
+          "body": "Crie índices para padrões de acesso, não para toda coluna. Um B-tree composto costuma beneficiar filtros e ordenações que usam seu prefixo de forma apropriada. Seletividade, tamanho da tabela, distribuição e estatísticas afetam a escolha do planner. EXPLAIN ANALYZE executa a consulta: use ambiente seguro e atenção redobrada em comandos de escrita. Índices aumentam custo de escrita e espaço; constraints de unicidade já criam índice correspondente no PostgreSQL.",
+          "example": "Para extrato WHERE account_id=? ORDER BY occurred_at DESC,id DESC LIMIT 50, avalie índice (account_id,occurred_at DESC,id DESC).",
+          "exercise": "Uma consulta pequena usa sequential scan mesmo com índice. Isso prova que o índice está quebrado?",
+          "answer": "Não. Ler poucas páginas pode ser mais barato que navegar índice e heap. Examine linhas estimadas/reais, buffers, tempo e tamanho do conjunto antes de concluir.",
+          "checklist": [
+            "Carga representativa",
+            "Linhas estimadas vs reais",
+            "Custo de escrita"
+          ]
+        },
+        {
+          "title": "Isolamento, locks e retries",
+          "body": "Atomicidade junta efeitos; isolamento define interações entre transações concorrentes. Read Committed não congela uma visão durante toda a transação no PostgreSQL. Serializable pode abortar operações para preservar a equivalência a alguma ordem serial; a aplicação precisa repetir a transação inteira com segurança. Locks devem cobrir o invariante, com ordem consistente para reduzir deadlocks. Um SELECT seguido de UPDATE sem proteção pode permitir que dois escritores aprovem o mesmo saldo.",
+          "example": "UPDATE accounts SET balance=balance-:amount WHERE id=:id AND balance>=:amount RETURNING balance; verifique se uma linha foi retornada.",
+          "exercise": "Duas transações transferem A→B e B→A. Como reduzir risco de deadlock?",
+          "answer": "Adquira locks das contas pela mesma ordenação de id em ambas. Ainda trate deadlock/serialization failure com retry limitado e preserve idempotência.",
+          "checklist": [
+            "Unidade transacional",
+            "Ordem de locks",
+            "Retry da transação inteira"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m09",
+      "title": "Sistemas distribuídos e garantias",
+      "level": "Avançado",
+      "summary": "Descreva precisamente o que o cliente observa diante de falhas parciais.",
+      "sourceUrls": [
+        "https://kafka.apache.org/41/design/design/",
+        "https://www.postgresql.org/docs/current/transaction-iso.html"
+      ],
+      "lessons": [
+        {
+          "title": "Tempo, timeout e resultado desconhecido",
+          "body": "Um timeout informa que o cliente não recebeu resposta no prazo; não prova que o servidor não executou a operação. O resultado pode ser desconhecido. Defina como consultar status e como repetir sem duplicar efeito. Relógios de máquinas podem divergir; ordenação por timestamp de parede não garante causalidade. Inclua operationId, estado durável e rastreabilidade. Não transforme unknown em failed se isso pode estimular uma segunda cobrança.",
+          "example": "O servidor confirma o débito, mas a resposta se perde. O cliente repete com a mesma chave e recupera o resultado anterior.",
+          "exercise": "Que resposta de API ajuda quando o processamento ultrapassa o timeout do gateway?",
+          "answer": "Um identificador estável e uma consulta de estado permitem pending/confirmed/declined. A semântica depende do contrato; uma confirmação prematura sem persistência não é segura.",
+          "checklist": [
+            "Unknown é distinto",
+            "Status consultável",
+            "Relógio não prova ordem"
+          ]
+        },
+        {
+          "title": "Consistência, replicação e partição",
+          "body": "Não apresente CAP como escolher duas letras para sempre. Durante uma partição, há escolhas sobre responder e preservar determinada consistência. Descreva a propriedade necessária por operação: leitura após escrita, ordem por conta, ausência de dupla aprovação ou tolerância a atraso no extrato. Réplicas de leitura podem atrasar; cache pode devolver estado antigo. Um único líder simplifica ordenação de escrita, mas tem limites de failover e capacidade.",
+          "example": "Saldo disponível exige decisão coerente no caminho de autorização; um painel analítico pode aceitar dados atrasados por minutos.",
+          "exercise": "O cliente transferiu e o extrato da réplica ainda não mostra a transação. Como melhorar a experiência?",
+          "answer": "Possibilidades: ler do primário após a escrita, sessão com token de posição, mostrar operação pendente ou aguardar réplica atingir versão. Declare custo e limite de cada opção.",
+          "checklist": [
+            "Garantia por operação",
+            "Atraso visível",
+            "Failover analisado"
+          ]
+        },
+        {
+          "title": "Idempotência, saga e compensação",
+          "body": "Idempotência significa que repetir a mesma operação lógica não cria novo efeito relevante. A chave deve ter escopo, payload associado, retenção e tratamento de concorrência. Reutilizar a mesma chave com payload diferente deve ser rejeitado. Uma saga coordena etapas com estados duráveis e possíveis compensações; compensar não apaga fatos do mundo. Uma transferência externa liquidada pode exigir uma nova transação de devolução, não um rollback mágico.",
+          "example": "Registre chave, hash/campos canônicos do pedido, estado e resultado na mesma fronteira de consistência do efeito local.",
+          "exercise": "O provedor confirmou, mas o banco local caiu antes de registrar sucesso. Qual é o próximo passo seguro?",
+          "answer": "Consultar o provedor por identificador estável ou reconciliar antes de repetir. Se não há consulta/idempotência externa, explicite risco e estado manual pendente.",
+          "checklist": [
+            "Escopo da chave",
+            "Payload conflitante",
+            "Compensação tem limites"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m10",
+      "title": "Kafka, eventos e pipelines confiáveis",
+      "level": "Avançado",
+      "summary": "Ordem, reprocessamento, backpressure e entrega ponta a ponta.",
+      "sourceUrls": [
+        "https://kafka.apache.org/41/design/design/",
+        "https://kafka.apache.org/41/getting-started/introduction/",
+        "https://kafka.apache.org/41/configuration/producer-configs/",
+        "https://kafka.apache.org/41/configuration/consumer-configs/"
+      ],
+      "lessons": [
+        {
+          "title": "Partições, chaves e paralelismo",
+          "body": "Escolher a chave define quais eventos precisam de ordem relativa e como a carga se distribui. Uma chave de conta pode preservar o fluxo daquela conta dentro de uma partição, mas contas muito ativas podem criar hotspots. Ordem dentro da partição não é ordem global do negócio. Alterar número de partições ou estratégia de particionamento exige avaliar a relação entre chave e histórico. Consumo paralelo precisa preservar a ordem necessária antes de confirmar progresso.",
+          "example": "Transações da conta A precisam de ordem; notificações independentes podem aceitar mais paralelismo. Modele ambos separadamente.",
+          "exercise": "Há 12 partições e 20 consumidores no mesmo grupo para um tópico. Todos processam simultaneamente esse tópico?",
+          "answer": "Na atribuição usual de grupo, uma partição pertence a um consumidor por vez; alguns ficarão sem partição desse tópico. A distribuição de carga ainda pode ser desigual.",
+          "checklist": [
+            "Chave ligada ao domínio",
+            "Hot key considerada",
+            "Ordem necessária explícita"
+          ]
+        },
+        {
+          "title": "Offsets, duplicação e efeito externo",
+          "body": "Confirmar progresso antes de executar o efeito pode perder trabalho após crash; confirmar depois pode repetir trabalho. Uma garantia do broker não se estende automaticamente a um banco ou API externo. Projete consumidor para reconhecer operações já aplicadas. Para alterações locais e emissão de evento, outbox grava estado e intenção de publicação na mesma transação; o publicador ainda pode duplicar mensagens e o consumidor deve lidar com isso.",
+          "example": "Crash depois do commit no banco e antes do commit do offset → reentrega. Uma constraint em event_id junto ao efeito protege a repetição local.",
+          "exercise": "O producer tem idempotência. Isso basta para garantir que email será enviado exatamente uma vez?",
+          "answer": "Não. O efeito de email ocorre fora da transação do Kafka. Use deduplicação, contrato do provedor ou aceite explicitamente a semântica possível.",
+          "checklist": [
+            "Ponto de crash desenhado",
+            "Deduplicação durável",
+            "Garantia ponta a ponta"
+          ]
+        },
+        {
+          "title": "Schema, replay e mensagens problemáticas",
+          "body": "Eventos devem representar fatos com identidade, versão e semântica estável. Evolua schemas de acordo com consumidores reais e retenção de dados históricos. Replay pode amplificar efeitos: se reprocessar um evento envia notificação de novo, separe projeção de efeitos externos. Uma dead-letter queue exige dono, alerta e procedimento de reprocessamento; não deve ser cemitério silencioso. Meça lag em tempo e volume, throughput e taxa de falhas.",
+          "example": "Inclua eventId, aggregateId, occurredAt, schemaVersion e payload; não dependa apenas do nome do tópico para contexto.",
+          "exercise": "Um consumidor falha sempre no mesmo evento e impede a partição de avançar. Como decidir o tratamento?",
+          "answer": "Classifique erro transitório ou permanente, limite retries, preserve payload seguro e metadados, encaminhe para investigação e avalie se avançar viola ordem/invariantes.",
+          "checklist": [
+            "Replay seguro",
+            "DLQ com dono",
+            "Compatibilidade testada"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m11",
+      "title": "System design: do requisito ao rollout",
+      "level": "Avançado → Staff",
+      "summary": "Um desenho forte torna decisões, limites e riscos verificáveis.",
+      "sourceUrls": [
+        "https://sre.google/sre-book/service-level-objectives/"
+      ],
+      "lessons": [
+        {
+          "title": "Descoberta e orçamento de capacidade",
+          "body": "Comece pelos atores, operações, escala, latência, disponibilidade, consistência e limites do escopo. Estimativas servem para localizar gargalos; declare unidades e suposições. Calcule média, pico, tamanho de dados, retenção e amplificação por fan-out. Um número preciso com hipótese errada não melhora a arquitetura. Construa primeiro o caminho crítico mínimo e detalhe a parte mais arriscada.",
+          "example": "10 milhões de operações/dia ≈116/s em média. Um pico hipotético de 20× dá ≈2.320/s; o fator deve ser validado, não apresentado como dado da empresa.",
+          "exercise": "Projete uma autorização com 200 ms de orçamento e três dependências seriais. Como repartir?",
+          "answer": "Reserve rede e processamento local, atribua deadlines a dependências e avalie paralelização segura. A soma de p99 individuais não equivale automaticamente ao p99 total; meça a distribuição ponta a ponta.",
+          "checklist": [
+            "Unidades coerentes",
+            "Média e pico",
+            "Hipóteses identificadas"
+          ]
+        },
+        {
+          "title": "API, modelo de dados e fluxos de falha",
+          "body": "Desenhe os contratos antes de preencher a tela com caixas. Para cada comando, defina autenticação, autorização, idempotência, validação, persistência e resposta. Para cada leitura, defina frescor e paginação. Percorra um cenário feliz, um retry concorrente e um crash entre etapas. Escolha um ponto de aprofundamento: contenção, particionamento, fila, cache ou reconciliação. O entrevistador deve enxergar como os dados mudam.",
+          "example": "POST /transfers com Idempotency-Key; GET /transfers/{id}; estados pending, confirmed e rejected; resultado desconhecido explicitamente consultável.",
+          "exercise": "Onde colocar cache numa API de saldo e qual risco explicar?",
+          "answer": "Cache pode servir projeções informativas com frescor declarado. A decisão de autorizar débito precisa de uma fonte consistente com seu invariante; cache desatualizado pode permitir overspend.",
+          "checklist": [
+            "Contrato antes de caixas",
+            "Falha entre etapas",
+            "Dono da consistência"
+          ]
+        },
+        {
+          "title": "Migração, custo e plano de operação",
+          "body": "Uma proposta Staff inclui como sair do estado atual, quem opera e como medir sucesso. Use expand-contract para mudanças de schema quando adequado: adicionar compatibilidade, migrar dados, trocar tráfego e retirar legado. Dual-write sem coordenação pode criar divergência; prefira mecanismos com reconciliação e autoridade clara. Defina canário, rollback, limites de blast radius e critérios de interrupção. Inclua custo de pessoas, não só de infraestrutura.",
+          "example": "Migração de extrato: backfill auditável → shadow reads → comparar divergências → tráfego gradual → rollback por feature flag → remoção após período acordado.",
+          "exercise": "Qual rollback funciona depois que o novo sistema já recebeu dados que o antigo não entende?",
+          "answer": "Rollback de binário pode ser insuficiente. Precisa compatibilidade reversa, tradução, janela de leitura dual ou plano de roll-forward. Explique antes do lançamento.",
+          "checklist": [
+            "Critério de sucesso",
+            "Rollback de dados",
+            "Responsáveis e etapas"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m12",
+      "title": "Segurança, privacidade e abuso",
+      "level": "Avançado",
+      "summary": "Proteja invariantes e fronteiras de confiança sem transformar a entrevista numa lista genérica.",
+      "sourceUrls": [
+        "https://api-security.owasp.org/editions/2023/en/0x11-t10/"
+      ],
+      "lessons": [
+        {
+          "title": "Autenticação não é autorização",
+          "body": "Autenticar responde quem está chamando; autorizar responde se aquela identidade pode executar a ação naquele recurso. Verifique ownership/tenant no acesso a cada objeto. Um id difícil de adivinhar não substitui autorização. Permissões administrativas e ações financeiras precisam de política explícita. Faça validação no servidor e use consultas parametrizadas; confiar no frontend deixa a API exposta a chamadas diretas.",
+          "example": "GET /accounts/123 exige verificar se o principal pode ler a conta 123; ter token válido sozinho não basta.",
+          "exercise": "Escreva um teste negativo para uma API multi-tenant de extrato.",
+          "answer": "Crie usuários de tenants A e B; obtenha token de A; solicite conta de B; confirme negação e ausência de vazamento no corpo, métricas ou logs.",
+          "checklist": [
+            "Recurso e ação verificados",
+            "Tenant explícito",
+            "Teste de acesso cruzado"
+          ]
+        },
+        {
+          "title": "Threat modeling e dados sensíveis",
+          "body": "Desenhe ativos, atores, fronteiras de confiança e caminhos de entrada. Para cada ameaça, relacione prevenção, detecção e resposta. Reduza dados coletados e retidos ao necessário; logs e backups também são cópias de dados. Não coloque tokens, documentos ou payloads financeiros completos em traces. Criptografia em trânsito e repouso não corrige um controle de acesso mal feito. Discuta retenção e exclusão como requisitos a confirmar com responsáveis jurídicos e de segurança.",
+          "example": "Webhook externo: validar origem/assinatura, janela temporal e replay, limitar payload, persistir identidade do evento e processar idempotentemente.",
+          "exercise": "Um dashboard de debugging permite buscar qualquer CPF. Quais controles faltam?",
+          "answer": "Acesso por necessidade, mascaramento, trilha de auditoria, limites de consulta, retenção e revisão. Avalie se a busca por dado pessoal é necessária para o caso de uso.",
+          "checklist": [
+            "Ativos identificados",
+            "Logs minimizados",
+            "Fronteiras desenhadas"
+          ]
+        },
+        {
+          "title": "Abuso, limites e cadeia de suprimentos",
+          "body": "Uma API correta funcionalmente pode ser usada para consumir recursos ou automatizar abuso. Aplique limites proporcionais a custo e identidade, sem depender apenas de IP. Falhas de um provedor devem ter timeout e validação de resposta. Dependências, imagens e pipelines de deploy também fazem parte da superfície de risco. Restrinja privilégios e segredos por serviço, registre mudanças e planeje rotação. Segurança operacional precisa de dono e verificação contínua.",
+          "example": "Uma exportação de extrato gigante pode ser assíncrona, ter cotas por usuário, limite de intervalo e expiração do arquivo.",
+          "exercise": "Como limitar login sem bloquear clientes atrás do mesmo NAT?",
+          "answer": "Combine sinais como conta, IP, dispositivo e comportamento com política proporcional; limite ações e use medidas adicionais quando necessário. Evite tratar um único sinal como identidade confiável.",
+          "checklist": [
+            "Custo por operação",
+            "Privilégio mínimo",
+            "Rotação e auditoria"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m13",
+      "title": "SRE, incidentes e depuração",
+      "level": "Avançado → Staff",
+      "summary": "Confiabilidade é comportamento percebido pelo usuário, sustentado por processos e sinais.",
+      "sourceUrls": [
+        "https://sre.google/sre-book/service-level-objectives/",
+        "https://sre.google/sre-book/monitoring-distributed-systems/",
+        "https://sre.google/sre-book/managing-incidents/",
+        "https://sre.google/sre-book/postmortem-culture/"
+      ],
+      "lessons": [
+        {
+          "title": "SLI, SLO e orçamento de erro",
+          "body": "SLI é uma medida do serviço; SLO é a meta numa janela; SLA envolve compromisso formal. Defina evento bom, denominador, janela e exclusões para evitar métricas enganosas. Disponibilidade de host não mede sucesso de pagamento. Para latência, acompanhe cauda e erros, não só média. Orçamento de erro orienta decisões sobre confiabilidade e mudanças; não é permissão automática para gastar indisponibilidade.",
+          "example": "SLO autoral: 99,9% das requisições elegíveis de consulta respondem corretamente em até 300 ms em 30 dias. Defina elegíveis e corretamente.",
+          "exercise": "Com 1 milhão de requests elegíveis e SLO 99,9%, quantos eventos ruins cabem no orçamento?",
+          "answer": "1.000 eventos ruins nessa janela e definição. Um orçamento por requests não se converte automaticamente em minutos de downtime.",
+          "checklist": [
+            "Evento bom definido",
+            "Denominador claro",
+            "Métrica de usuário"
+          ]
+        },
+        {
+          "title": "Diagnóstico guiado por hipótese",
+          "body": "Primeiro determine impacto, início, escopo e mudanças recentes. Observe latência, tráfego, erros e saturação; cruze com traces e logs com correlação. Faça hipóteses falsificáveis e execute experimentos pequenos. Mitigar impacto pode vir antes de explicar causa raiz. Evite alterar várias coisas ao mesmo tempo e perder a capacidade de atribuir efeito. Acompanhe se a ação melhorou o sinal do usuário.",
+          "example": "p99 subiu, CPU estável, pool de conexões saturado após novo endpoint: hipótese de query lenta ou conexão retida; compare tempo de banco e duração de empréstimo de conexão.",
+          "exercise": "A fila cresce, mas adicionar consumidores não aumenta throughput. O que investigar?",
+          "answer": "Número de partições, hot keys, limite do downstream, locks, retries e custo por mensagem. Mais workers podem ampliar contenção em vez de resolver.",
+          "checklist": [
+            "Hipótese falsificável",
+            "Mitigação mensurada",
+            "Uma mudança por vez quando possível"
+          ]
+        },
+        {
+          "title": "Comando de incidente e aprendizado",
+          "body": "Defina coordenação, operações, comunicação e registro. Atualizações devem dizer impacto conhecido, mitigação atual e próxima verificação, sem inventar prazo. Preserve evidências úteis e trate credenciais/dados com cuidado. Postmortem analisa fatores técnicos e organizacionais, não culpa individual. Ações precisam de responsável, prazo e mecanismo de validar redução de risco. Um Staff fortalece o sistema e a equipe, não apenas vira a pessoa chamada em todas as madrugadas.",
+          "example": "Atualização: \"Falhas em autorizações no segmento X desde 14h10; rollback em execução; próxima atualização em 15 minutos; demais fluxos sob verificação.\"",
+          "exercise": "Transforme \"engenheiro fez deploy errado\" em uma análise útil.",
+          "answer": "Pergunte como revisão, testes, flags, rollout e alertas permitiram a falha, quais sinais faltavam e que barreiras reduziriam repetição. Preserve responsabilidade sem procurar um culpado único.",
+          "checklist": [
+            "Papéis claros",
+            "Impacto comunicado",
+            "Ação verificável"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m14",
+      "title": "Staff: influência, estratégia e execução",
+      "level": "Staff",
+      "summary": "Evidencie impacto técnico além da própria tarefa, com decisões e resultados verificáveis.",
+      "sourceUrls": [],
+      "lessons": [
+        {
+          "title": "Narrativa de impacto sem inflar autoria",
+          "body": "Estruture histórias em contexto, problema, responsabilidade, alternativas, ação, resultado e aprendizado. Separe sua contribuição da da equipe. Diga quais decisões você tomou, quem precisou alinhar e quais evidências mudaram o plano. Resultados podem incluir redução de incidentes, tempo de entrega, custo ou risco; não invente números ausentes. Explique limites de atribuição quando vários fatores contribuíram.",
+          "example": "\"Propus padronizar idempotência após três incidentes; alinhei quatro equipes; pilotei num serviço; a adoção reduziu retrabalho observado, medido por...\" Use somente fatos seus.",
+          "exercise": "Escreva uma história sobre um projeto que não saiu como esperado e inclua sua responsabilidade.",
+          "answer": "Uma boa resposta identifica hipótese errada, sinal ignorado, correção e mudança de processo. Evita transformar fracasso em uma falsa vitória ou culpar outra equipe.",
+          "checklist": [
+            "Autoria precisa",
+            "Resultado verificável",
+            "Aprendizado específico"
+          ]
+        },
+        {
+          "title": "Discordância, RFC e decisão",
+          "body": "Discordar bem exige entender o objetivo e a restrição do outro lado. Exponha opções com critérios compartilhados: risco, custo, prazo, reversibilidade e impacto no usuário. Registre premissas e decisão numa RFC/ADR curta. Procure evidência que poderia mudar sua opinião. Quando a decisão é tomada, combine como avaliar e quando reabrir. Influência não é ganhar todas as discussões nem exigir autoridade hierárquica.",
+          "example": "\"Minha preferência é A pelo custo operacional. Se o experimento mostrar que B reduz p99 em 30% com a mesma confiabilidade, eu revisaria a recomendação.\"",
+          "exercise": "Produto quer lançar sexta; você vê risco de perda de dados. Conduza a conversa.",
+          "answer": "Explique cenário e impacto, proponha alternativas menores, rollout limitado e critério de bloqueio. Escale quando necessário com evidência e opções, não com veto vago.",
+          "checklist": [
+            "Objetivo compartilhado",
+            "Evidência que muda opinião",
+            "Decisão registrada"
+          ]
+        },
+        {
+          "title": "Direção técnica e multiplicação da equipe",
+          "body": "Uma estratégia técnica liga problemas de negócio a capacidades, prioridades e sequência de investimento. Não é catálogo de tecnologias. Identifique onde um padrão compartilhado reduz custo e onde autonomia preserva velocidade. Mentoria inclui criar espaço de decisão e feedback, não tomar todo problema difícil. Mapeie dependências entre equipes e defina contratos, responsáveis e marcos. O plano deve sobreviver à sua ausência.",
+          "example": "Objetivo: diminuir incidentes de integração. Capacidades: contratos versionados, sandbox, observabilidade e política de retry. Sequência: medir → piloto → adoção → remover exceções.",
+          "exercise": "Desenhe um plano de 90 dias para um domínio novo sem presumir que tudo precisa ser reescrito.",
+          "answer": "30 dias: ouvir, mapear e medir; 30: escolher e validar um problema prioritário; 30: ampliar solução com donos, métricas e documentação. Ajuste ao contexto real.",
+          "checklist": [
+            "Problema antes de tecnologia",
+            "Dono e sequência",
+            "Conhecimento distribuído"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m15",
+      "title": "Entrevista técnica e inglês de engenharia",
+      "level": "Todos os níveis",
+      "summary": "Raciocínio audível, colaboração e honestidade técnica são habilidades treináveis.",
+      "sourceUrls": [],
+      "lessons": [
+        {
+          "title": "Live coding colaborativo",
+          "body": "Confirme contrato e exemplos, proponha uma solução simples, explique a complexidade e comece a codar. Faça checkpoints curtos e peça esclarecimento específico quando necessário. Se esquecer sintaxe, diga o comportamento que deseja e use uma construção que domina. Não fique em silêncio por longos períodos, mas também não narre cada tecla. Termine com execução mental ou testes e reconheça o que ficou incompleto.",
+          "example": "\"Vou primeiro garantir uma versão correta em O(n log n). Depois verifico se o limite de entrada exige uma otimização.\"",
+          "exercise": "Simule 40 minutos: 5 contrato, 5 plano, 20 código, 7 testes, 3 revisão. Grave somente seu treino com consentimento de quem participar.",
+          "answer": "Ao revisar, encontre um ponto em que uma hipótese ficou implícita, um teste faltou e uma explicação podia ser menor. Refaça o problema mudando uma restrição.",
+          "checklist": [
+            "Contrato alinhado",
+            "Checkpoint de tempo",
+            "Teste antes de encerrar"
+          ]
+        },
+        {
+          "title": "Inglês para esclarecer e justificar",
+          "body": "Prepare blocos de intenção, não discursos longos decorados. Frases curtas permitem pensar e ser entendido. Pratique unidades, números, complexidade e comparação de trade-offs em voz alta. Se uma palavra faltar, reformule. Você pode pedir repetição de uma restrição sem fingir que entendeu. Uma explicação boa declara a hipótese, a decisão e sua consequência.",
+          "example": "\"Let me clarify the consistency requirement.\" / \"A timeout does not tell us whether the operation committed.\" / \"I would choose this because... The trade-off is...\"",
+          "exercise": "Explique idempotência em inglês em 60 segundos e depois responda: \"What if the same key is reused with a different payload?\"",
+          "answer": "\"I would persist the request fingerprint with the result. A repeated key with the same payload returns the original result; a different payload is rejected.\" Acrescente concorrência e retenção se houver tempo.",
+          "checklist": [
+            "Uma ideia por frase",
+            "Hipótese explícita",
+            "Pedir esclarecimento específico"
+          ]
+        },
+        {
+          "title": "Perguntas ao entrevistador e autocrítica",
+          "body": "Use perguntas para entender escopo real: qual domínio, qual nível de autonomia, quais problemas distinguem Staff e quais etapas estão previstas. Não assuma que uma experiência publicada na internet vale para sua vaga. Após cada treino, avalie decisões e evidências, não apenas sensação de fluência. Uma resposta forte pode incluir \"não sei ainda\" acompanhado do experimento que reduziria a incerteza.",
+          "example": "\"Que tipo de decisão entre equipes essa pessoa deve liderar nos primeiros seis meses?\"",
+          "exercise": "Faça uma revisão de cinco minutos após um mock e escolha uma única fraqueza para o próximo.",
+          "answer": "Classifique a falha: conhecimento, recuperação, implementação, comunicação ou gestão do tempo. Escreva um exercício específico de correção e verifique novamente em outro contexto.",
+          "checklist": [
+            "Processo confirmado",
+            "Lacuna classificada",
+            "Próximo exercício concreto"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m16",
+      "title": "Memória operacional, recuperação e preparação emocional",
+      "level": "Todos os níveis",
+      "summary": "A meta é recuperar e aplicar conhecimento, não prometer ausência total de esquecimento ou nervosismo.",
+      "sourceUrls": [],
+      "lessons": [
+        {
+          "title": "Recuperação ativa e repetição espaçada",
+          "body": "Feche o material e tente explicar, desenhar ou implementar antes de consultar a resposta. Ler repetidamente pode produzir familiaridade sem capacidade de recuperação. Use intervalos de revisão como ponto de partida, por exemplo 1, 3, 7, 14 e 30 dias, ajustando conforme dificuldade. Esses intervalos são uma heurística prática, não uma receita universal. Uma resposta lembrada sem entender o motivo merece novo exercício com restrição diferente.",
+          "example": "Frente: \"Como evitar usar o mesmo elemento duas vezes no two-sum?\" Verso: \"Consultar complemento antes de inserir o índice atual.\"",
+          "exercise": "Reescreva seu esqueleto de BFS sem olhar. Depois compare e marque somente os erros.",
+          "answer": "Se errou visited, treine um grafo com ciclo. Se esqueceu import, faça uma repetição curta do esqueleto. Corrija a lacuna específica em vez de reler o capítulo inteiro.",
+          "checklist": [
+            "Tentar antes de revelar",
+            "Revisar erros",
+            "Variar contexto"
+          ]
+        },
+        {
+          "title": "Chunks de sintaxe e exemplos mínimos",
+          "body": "Organize memória em blocos úteis: assinatura, validação, estrutura, loop, retorno e testes. Para cada linguagem, mantenha poucos esqueletos: mapa, fila, ordenação, redução, resultado e exceção. Associe cada bloco a uma condição de uso. Em vez de decorar 200 imports, pratique os imports dos problemas que você realmente resolve. Escolha uma linguagem principal para entrevista e uma secundária apenas se o contexto exigir.",
+          "example": "BFS: deque → fila inicial → visited inicial → while → popleft → vizinhos → marcar ao enfileirar → retornar distância.",
+          "exercise": "Explique por que marcar visited apenas ao retirar da fila pode aumentar trabalho.",
+          "answer": "Um mesmo nó pode ser enfileirado por vários pais antes de ser removido. Marcar ao enfileirar evita duplicação quando o algoritmo e o contrato permitem.",
+          "checklist": [
+            "Bloco associado ao uso",
+            "Esqueleto pequeno",
+            "Uma linguagem principal"
+          ]
+        },
+        {
+          "title": "Protocolo quando der branco",
+          "body": "Pare alguns segundos, solte os ombros e retome o contrato escrito. Reduza a entrada para dois ou três elementos. Diga o que sabe, desenhe estado e escolha o próximo passo verificável. Você não precisa sentir confiança total para avançar. Treine sob tempo gradualmente, preservando descanso e pausas. Este material oferece práticas de preparação; não garante controle de ansiedade nem aprovação. Se o nervosismo estiver prejudicando sua rotina, apoio profissional pode ajudar.",
+          "example": "\"Vou usar um exemplo menor para conferir o invariante. Tenho estas entradas; depois desta operação, este valor deve continuar igual.\"",
+          "exercise": "Peça a um colega para mudar uma restrição no meio do mock e pratique reorganizar o plano.",
+          "answer": "Repita a nova restrição, diga qual hipótese caiu, mantenha as partes válidas e adapte uma decisão por vez. Não tente ocultar a mudança de raciocínio.",
+          "checklist": [
+            "Pausa curta",
+            "Exemplo mínimo",
+            "Próximo passo concreto"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m17",
+      "title": "Especialidade frontend: design systems e acessibilidade",
+      "level": "Staff especializado",
+      "summary": "Aprofunde este eixo se o escopo da vaga envolver experiência web ou plataforma frontend.",
+      "sourceUrls": [
+        "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/",
+        "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+      ],
+      "lessons": [
+        {
+          "title": "Arquitetura frontend e estado",
+          "body": "Separe estado de servidor, estado de navegação e estado efêmero de interação. Um cache de requests não deve virar autoridade sobre saldo financeiro. Defina fronteiras de features, contratos com backend e observabilidade da jornada. Considere rendering no servidor ou cliente conforme necessidades reais de performance, SEO e interatividade. Microfrontends trazem autonomia potencial e custos de integração, dependências, consistência visual e operação; exigem uma razão organizacional concreta.",
+          "example": "Uma transferência mostra pending até confirmação autoritativa, preserva operationId e permite retomar o fluxo depois de recarregar.",
+          "exercise": "Como evitar que duas abas disparem a mesma transferência?",
+          "answer": "Desabilitar botão é apenas UX. A operação precisa de identidade e idempotência no servidor; sincronização entre abas melhora experiência, mas não é a garantia principal.",
+          "checklist": [
+            "Autoridade do dado",
+            "Estado explícito",
+            "Performance da jornada"
+          ]
+        },
+        {
+          "title": "Design system como produto interno",
+          "body": "Tokens representam decisões como cor, espaço e tipografia; componentes encapsulam comportamento e acessibilidade; padrões orientam composição. Um design system precisa de versão, documentação, contribuição e estratégia de adoção. Medir apenas número de componentes incentiva catálogo sem uso. Avalie consistência, tempo de implementação, defeitos de acessibilidade e adoção por produto. Permita exceções justificadas com retorno de aprendizado.",
+          "example": "Button define variantes, loading, disabled, foco e nome acessível; o fluxo de pagamento define quando cada estado ocorre.",
+          "exercise": "Três equipes têm modais diferentes. Como padronizar sem impor uma migração gigante?",
+          "answer": "Inventarie usos e necessidades, crie um contrato acessível, pilote com uma equipe, publique guia de migração e retire legados gradualmente com métricas e responsáveis.",
+          "checklist": [
+            "Tokens semânticos",
+            "Contrato de comportamento",
+            "Adoção mensurada"
+          ]
+        },
+        {
+          "title": "Acessibilidade e performance verificáveis",
+          "body": "Use HTML semântico e teste navegação por teclado, foco, nomes acessíveis e contraste. Num modal, o foco entra, permanece no contexto enquanto aberto e retorna adequadamente ao fechar. Mensagens de erro precisam estar relacionadas ao campo e indicar como corrigir. Para performance, examine a jornada em dispositivos e redes representativos, custo de JavaScript, renderizações e requests. Uma média de laboratório não representa todos os usuários.",
+          "example": "Um dialog de confirmação tem título identificável, foco inicial deliberado, Escape quando apropriado e retorno ao disparador.",
+          "exercise": "Uma página é bonita, mas o usuário só consegue concluir com mouse. Qual teste faltou?",
+          "answer": "Teste de teclado ponta a ponta, ordem de foco e estados. Complemente com leitor de tela e testes automáticos, reconhecendo que automação não verifica toda a experiência.",
+          "checklist": [
+            "Teclado ponta a ponta",
+            "Foco previsível",
+            "Medição representativa"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m18",
+      "title": "Especialidade mobile: offline, sync e release",
+      "level": "Staff especializado",
+      "summary": "Aprofunde para equipes de aplicativo; os princípios independem de uma linguagem específica.",
+      "sourceUrls": [],
+      "lessons": [
+        {
+          "title": "Offline e sincronização com contratos",
+          "body": "Classifique ações que podem ser locais, enfileiradas ou precisam de confirmação remota. Exibir extrato em cache não autoriza uma transação offline. Uma fila local precisa de identidade, estado, prazo, política de retry e reconciliação. Conflitos de edição podem usar versão e política de merge quando o domínio permitir; last-write-wins pode perder intenção. Comunicação deve distinguir salvo no aparelho, enviado e confirmado.",
+          "example": "Rascunho de descrição pode sincronizar depois; envio de pagamento permanece pendente até confirmação do serviço responsável.",
+          "exercise": "O usuário envia uma ação, perde rede e reinstala o aplicativo. Que garantia sobrevive?",
+          "answer": "Somente o estado durável no servidor e identidades recuperáveis. Uma fila apenas local pode ser perdida; defina comportamento de recuperação sem prometer confirmação que não ocorreu.",
+          "checklist": [
+            "Ações offline classificadas",
+            "Estados visíveis",
+            "Conflito por domínio"
+          ]
+        },
+        {
+          "title": "Ciclo de vida e recursos limitados",
+          "body": "Apps podem ser suspensos ou encerrados a qualquer momento; não dependa de callbacks finais para persistir dados essenciais. Considere bateria, memória, qualidade de rede e acessibilidade. Trabalhos em background têm limites da plataforma. Separe estado de tela de processos de negócio retomáveis. Medir crash-free sessions não substitui medir sucesso de jornadas: um app pode falhar funcionalmente sem crash.",
+          "example": "Persistir operationId antes de navegar para outra tela permite retomar a consulta do resultado após reinício.",
+          "exercise": "Uma transferência gira indefinidamente depois que o app volta do background. O que revisar?",
+          "answer": "Restauração de estado, timeout, cancelamento, consulta de status e tratamento de conectividade. O indicador de loading precisa de saída e significado claros.",
+          "checklist": [
+            "Retomada testada",
+            "Persistência antes de perder contexto",
+            "Métrica da jornada"
+          ]
+        },
+        {
+          "title": "Compatibilidade e rollout de aplicativo",
+          "body": "Clientes antigos podem permanecer ativos por meses. Evolua APIs mantendo contratos necessários e planeje descontinuação com dados. Feature flags permitem limitar exposição, mas exigem valores seguros e limpeza posterior. Rollback de app pode ser lento; controle no servidor e kill switches bem definidos ajudam mitigação. Teste combinações relevantes de cliente e servidor, versões de schema local e migrações.",
+          "example": "Backend aceita campo novo opcional; cliente novo lê resposta com fallback; habilitação ocorre por coorte; monitoramento compara sucesso e latência.",
+          "exercise": "Você remove um campo porque o app atual não usa. Qual risco?",
+          "answer": "Versões antigas ou outros consumidores ainda podem depender dele. Consulte telemetria e contratos, estabeleça janela de compatibilidade e só remova com evidência.",
+          "checklist": [
+            "Clientes antigos",
+            "Kill switch testado",
+            "Migração de dados local"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m19",
+      "title": "Especialidade dados, ML e experimentação",
+      "level": "Staff especializado",
+      "summary": "Diferencie plataforma de dados, engenharia de ML e decisões experimentais.",
+      "sourceUrls": [],
+      "lessons": [
+        {
+          "title": "Batch, streaming e qualidade do dado",
+          "body": "Escolha batch ou streaming pelo prazo de decisão e custo, não pela novidade. Defina evento, granularidade, propriedade, linhagem, frescor e completude. Event time pode diferir de processing time; dados atrasados exigem política de atualização. Deduplicação, backfill e replay precisam preservar semântica. Uma tabela atualizada pontualmente ainda pode conter dados incorretos. Contratos de dados incluem formato e significado.",
+          "example": "Relatório diário pode aceitar batch com reconciliação; sinal antifraude na autorização exige prazo muito menor e fallback definido.",
+          "exercise": "Como recalcular 90 dias de agregados sem contar eventos em duplicidade?",
+          "answer": "Use identificadores estáveis, janela/versionamento de saída, processamento determinístico e validação de totais. Faça substituição controlada ou merge idempotente com rastreabilidade.",
+          "checklist": [
+            "Granularidade",
+            "Dados atrasados",
+            "Backfill auditável"
+          ]
+        },
+        {
+          "title": "ML em produção: treino, serving e fallback",
+          "body": "Um modelo é parte de um sistema. Discuta origem de features, prevenção de leakage, separação temporal de avaliação, versionamento e consistência treino/serving. Monitore qualidade, drift, latência, disponibilidade e consequências do fallback. AUC sozinha não escolhe limiar de decisão: custos de falso positivo e falso negativo importam. Mudanças de política e comportamento alteram distribuição; retreino automático precisa de controles.",
+          "example": "Se feature service falha, escolha uma política explícita: modelo reduzido, regra conservadora, revisão ou rejeição, conforme risco e produto.",
+          "exercise": "Um modelo tem excelente métrica offline e péssimo resultado online. Liste hipóteses.",
+          "answer": "Leakage, mudança temporal, features inconsistentes, população diferente, atraso de labels, limiar inadequado ou impacto de feedback. Priorize verificações com dados.",
+          "checklist": [
+            "Split temporal",
+            "Treino/serving coerentes",
+            "Fallback explicado"
+          ]
+        },
+        {
+          "title": "Experimentos e decisões responsáveis",
+          "body": "Defina hipótese, unidade de randomização, métrica principal, guardrails e duração antes de interpretar resultados. Verifique exposição, qualidade de instrumentação e interferência entre grupos. Significância estatística não mede tamanho ou importância do efeito. Analisar repetidamente até aparecer um resultado favorável pode distorcer conclusões se o desenho não considerar isso. Em decisões sensíveis, envolva responsáveis por risco, produto e governança.",
+          "example": "Experimento de onboarding: conversão é principal; erros, latência e abandono por segmento são guardrails; unidade de randomização é usuário.",
+          "exercise": "A métrica total melhorou, mas um grupo importante piorou muito. Você lança?",
+          "answer": "Investigue segmentos predefinidos, incerteza, exposição e impacto; compare guardrails e objetivos. Um agregado favorável não resolve automaticamente danos concentrados.",
+          "checklist": [
+            "Hipótese prévia",
+            "Guardrails",
+            "Tamanho de efeito e incerteza"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m20",
+      "title": "Especialidade plataforma, infraestrutura e developer experience",
+      "level": "Staff especializado",
+      "summary": "Construa capacidades compartilhadas com adoção, operação e custos sustentáveis.",
+      "sourceUrls": [
+        "https://sre.google/sre-book/service-level-objectives/",
+        "https://api-security.owasp.org/editions/2023/en/0x11-t10/"
+      ],
+      "lessons": [
+        {
+          "title": "Plataforma como produto e caminhos suportados",
+          "body": "Uma plataforma deve reduzir esforço para realizar tarefas frequentes com confiabilidade. Descubra usuários, jornadas, dores e integrações antes de padronizar. Ofereça caminhos suportados para deploy, observabilidade, secrets e dados, com documentação e mecanismos de exceção. Não force todas as equipes para abstrações que escondem capacidades necessárias. Meça tempo para primeira entrega, falhas e custo de suporte, além de adoção.",
+          "example": "Um template de serviço entrega health check, telemetria, pipeline e política de dependências, com ownership claro de upgrades.",
+          "exercise": "Por que uma plataforma com 90% de adoção pode ainda estar falhando?",
+          "answer": "Adoção pode ser obrigatória, enquanto tempo de entrega e satisfação pioram. Avalie outcomes, toil, estabilidade e custo de migração.",
+          "checklist": [
+            "Usuário e jornada",
+            "Suporte definido",
+            "Outcome além de adoção"
+          ]
+        },
+        {
+          "title": "Deploy, isolamento e cadeia de entrega",
+          "body": "Separe construir artefato, promover configuração e executar release. Use artefatos identificáveis, permissões mínimas e trilha de mudanças. Canário precisa de métricas e tráfego representativos; caso contrário só adia a descoberta. Planeje limites de recursos e isolamento entre tenants/serviços. Uma falha de control plane pode afetar muitos produtos; reduza dependências críticas em caminhos de execução.",
+          "example": "Serviço continua operando com configuração validada em cache quando o control plane de flags está indisponível; o fallback precisa ser seguro.",
+          "exercise": "Um pipeline pode fazer deploy em produção a partir de qualquer branch. Qual desenho melhor?",
+          "answer": "Defina política de origem, revisão, artefato imutável, autorização e promoção rastreável. A política exata depende do risco; não confunda mais passos manuais com mais segurança.",
+          "checklist": [
+            "Artefato rastreável",
+            "Canário mensurável",
+            "Falha do control plane"
+          ]
+        },
+        {
+          "title": "Capacidade, custo e multitenancy",
+          "body": "Modele demanda, picos, quotas e unidades de custo. Autoscaling não corrige limites de banco, inicialização lenta ou hot keys. Em multitenancy, considere noisy neighbor, isolamento de dados, fairness e atribuição de custo. Uma otimização deve preservar requisitos de confiabilidade e segurança. Decisões entre centralizar e distribuir dependem de autonomia, economia operacional e blast radius.",
+          "example": "Fila por classe de trabalho, limite por tenant e workers com capacidade reservada podem proteger operações críticas de exportações pesadas.",
+          "exercise": "O custo caiu 30%, mas p99 dobrou. Como avaliar se foi uma boa decisão?",
+          "answer": "Compare com SLO, impacto no usuário, erros, volume e custo por operação útil. Uma economia isolada não prova melhoria total.",
+          "checklist": [
+            "Custo unitário",
+            "Noisy neighbor",
+            "SLO preservado"
+          ]
+        }
+      ]
+    }
+  ],
+  "codeLabs": [
+    {
+      "id": "py-ledger",
+      "title": "Ledger em memória: replay idempotente",
+      "language": "Python",
+      "why": "Praticar invariantes financeiros, validação e transformação pura.",
+      "problem": "Aplique transferências em centavos, rejeite saldo insuficiente, deduplique IDs e rejeite reutilização de ID com outro payload. A função recebe um snapshot e retorna outro sem alterar o original. É um modelo didático em memória, sem durabilidade nem coordenação distribuída.",
+      "code": "from dataclasses import dataclass\nfrom typing import Dict, Iterable, Tuple\n\n@dataclass(frozen=True)\nclass Transfer:\n    id: str\n    source: str\n    target: str\n    cents: int\n\n@dataclass\nclass Snapshot:\n    balances: Dict[str, int]\n    applied: Dict[str, Tuple[str, str, int]]\n\ndef replay(initial: Snapshot, events: Iterable[Transfer]) -> Snapshot:\n    balances = dict(initial.balances)\n    applied = dict(initial.applied)\n    if any(type(v) is not int or v < 0 for v in balances.values()):\n        raise ValueError(\"invalid initial balance\")\n    for event in events:\n        if not event.id or type(event.cents) is not int or event.cents <= 0:\n            raise ValueError(\"invalid transfer\")\n        if event.source == event.target:\n            raise ValueError(\"same account\")\n        fingerprint = (event.source, event.target, event.cents)\n        if event.id in applied:\n            if applied[event.id] != fingerprint:\n                raise ValueError(\"idempotency conflict\")\n            continue\n        if event.source not in balances or event.target not in balances:\n            raise ValueError(\"unknown account\")\n        if balances[event.source] < event.cents:\n            raise ValueError(\"insufficient funds\")\n        balances[event.source] -= event.cents\n        balances[event.target] += event.cents\n        applied[event.id] = fingerprint\n    return Snapshot(balances, applied)",
+      "tests": "import unittest\n\nclass LedgerTests(unittest.TestCase):\n    def setUp(self):\n        self.initial = Snapshot({\"A\": 1000, \"B\": 100}, {})\n\n    def test_duplicate_and_conservation(self):\n        event = Transfer(\"t1\", \"A\", \"B\", 300)\n        result = replay(self.initial, [event, event])\n        self.assertEqual(result.balances, {\"A\": 700, \"B\": 400})\n        self.assertEqual(sum(result.balances.values()), 1100)\n        self.assertEqual(replay(result, [event]), result)\n        self.assertEqual(self.initial.balances[\"A\"], 1000)\n\n    def test_conflict(self):\n        with self.assertRaisesRegex(ValueError, \"conflict\"):\n            replay(self.initial, [Transfer(\"x\", \"A\", \"B\", 10),\n                                  Transfer(\"x\", \"A\", \"B\", 20)])\n\n    def test_failure_preserves_input(self):\n        with self.assertRaisesRegex(ValueError, \"insufficient\"):\n            replay(self.initial, [Transfer(\"x\", \"A\", \"B\", 2000)])\n        self.assertEqual(self.initial, Snapshot({\"A\": 1000, \"B\": 100}, {}))\n\n    def test_invalid_and_empty(self):\n        self.assertEqual(replay(self.initial, []), self.initial)\n        for cents in (0, -1, True):\n            with self.assertRaises(ValueError):\n                replay(self.initial, [Transfer(\"x\", \"A\", \"B\", cents)])\n\nif __name__ == \"__main__\":\n    unittest.main()",
+      "walkthrough": [
+        "Copie o snapshot para preservar o argumento.",
+        "Valide antes de alterar; associe ID ao payload completo relevante.",
+        "Aplique débito e crédito no estado local; só devolva após o lote válido.",
+        "Discuta como levar o mesmo invariante para transação durável e retenção de chaves."
+      ],
+      "complexity": "O(a + e + d) esperado em tempo e O(a + d) em memória, com a contas, e eventos e d IDs no snapshot final.",
+      "pitfalls": [
+        "Não é um ledger contábil completo.",
+        "O mapa de dedupe cresce sem limite.",
+        "Moeda única implícita; produção deve validar moeda e escala.",
+        "Uma função pura não resolve múltiplos escritores."
+      ],
+      "run": "Salve código + testes em ledger.py; execute python3 ledger.py (Python 3.10+).",
+      "sourceUrl": "https://docs.python.org/3/library/collections.html",
+      "validation": "Executado em Python 3.10: 4 testes unittest passaram (repetição, conflito, conservação e validação)."
+    },
+    {
+      "id": "py-window",
+      "title": "Rate limiter de janela deslizante",
+      "language": "Python",
+      "why": "Dominar deque, fronteiras temporais e invariante de janela.",
+      "problem": "No máximo limit aceitações por chave nos últimos window_ms. Chamadas devem ter timestamp inteiro não decrescente globalmente. Eventos exatamente na borda antiga expiram. Demonstração de processo único; sem proteção multithread.",
+      "code": "from collections import defaultdict, deque\nfrom typing import Deque, Dict, Optional\n\nclass SlidingWindow:\n    def __init__(self, limit: int, window_ms: int):\n        if type(limit) is not int or type(window_ms) is not int or limit <= 0 or window_ms <= 0:\n            raise ValueError(\"positive integer limit and window required\")\n        self.limit = limit\n        self.window_ms = window_ms\n        self.events: Dict[str, Deque[int]] = defaultdict(deque)\n        self.last_now: Optional[int] = None\n\n    def allow(self, key: str, now_ms: int) -> bool:\n        if type(now_ms) is not int:\n            raise ValueError(\"integer timestamp required\")\n        if self.last_now is not None and now_ms < self.last_now:\n            raise ValueError(\"time moved backwards\")\n        self.last_now = now_ms\n        queue = self.events[key]\n        while queue and queue[0] <= now_ms - self.window_ms:\n            queue.popleft()\n        if len(queue) >= self.limit:\n            return False\n        queue.append(now_ms)\n        return True",
+      "tests": "import unittest\n\nclass WindowTests(unittest.TestCase):\n    def test_boundary(self):\n        r = SlidingWindow(2, 1000)\n        self.assertTrue(r.allow(\"a\", 0))\n        self.assertTrue(r.allow(\"a\", 1))\n        self.assertFalse(r.allow(\"a\", 999))\n        self.assertTrue(r.allow(\"a\", 1000))\n        self.assertFalse(r.allow(\"a\", 1000))\n        self.assertTrue(r.allow(\"a\", 1001))\n\n    def test_keys_and_clock(self):\n        r = SlidingWindow(1, 10)\n        self.assertTrue(r.allow(\"a\", 20))\n        self.assertTrue(r.allow(\"b\", 20))\n        self.assertFalse(r.allow(\"a\", 20))\n        with self.assertRaises(ValueError):\n            r.allow(\"a\", 19)\n\nif __name__ == \"__main__\":\n    unittest.main()",
+      "walkthrough": [
+        "Defina a janela como (now-window, now].",
+        "Remova aceitações expiradas da esquerda.",
+        "Conte somente as aceitações; negar não consome nova cota.",
+        "Prove custo amortizado: cada timestamp entra e sai uma vez."
+      ],
+      "complexity": "O(1) amortizado por chamada; O(k·limit) para timestamps, com k chaves já criadas. Uma chamada pode remover O(limit) itens.",
+      "pitfalls": [
+        "Chaves inativas não são removidas neste exemplo.",
+        "Relógio de parede pode regredir; prefira monotônico no processo.",
+        "Múltiplas instâncias exigem coordenação ou cota particionada.",
+        "Limitador por janela não limita concorrência de operações longas."
+      ],
+      "run": "Salve código + testes em window.py; execute python3 window.py.",
+      "sourceUrl": "https://docs.python.org/3/library/collections.html",
+      "validation": "Executado em Python 3.10: 2 testes unittest passaram, incluindo borda exata e relógio regressivo."
+    },
+    {
+      "id": "py-dag",
+      "title": "Planejamento de deploy com ordenação topológica",
+      "language": "Python",
+      "why": "Praticar grafos, detecção de ciclo e desempate determinístico.",
+      "problem": "Receba serviço → lista de pré-requisitos. Retorne ordem válida, escolhendo alfabeticamente entre serviços disponíveis. Pré-requisito mencionado sem chave também é um vértice. Rejeite ciclos.",
+      "code": "from heapq import heappop, heappush, heapify\nfrom typing import Dict, List\n\ndef deployment_order(dependencies: Dict[str, List[str]]) -> List[str]:\n    nodes = set(dependencies)\n    for values in dependencies.values():\n        nodes.update(values)\n    outgoing = {node: set() for node in nodes}\n    indegree = {node: 0 for node in nodes}\n    for service, prerequisites in dependencies.items():\n        for prerequisite in set(prerequisites):\n            outgoing[prerequisite].add(service)\n            indegree[service] += 1\n    ready = [node for node in nodes if indegree[node] == 0]\n    heapify(ready)\n    result = []\n    while ready:\n        node = heappop(ready)\n        result.append(node)\n        for following in outgoing[node]:\n            indegree[following] -= 1\n            if indegree[following] == 0:\n                heappush(ready, following)\n    if len(result) != len(nodes):\n        raise ValueError(\"dependency cycle\")\n    return result",
+      "tests": "import unittest\n\nclass DagTests(unittest.TestCase):\n    def test_order(self):\n        deps = {\"api\": [\"db\", \"cache\", \"db\"], \"worker\": [\"db\"], \"db\": []}\n        result = deployment_order(deps)\n        self.assertEqual(result, [\"cache\", \"db\", \"api\", \"worker\"])\n        position = {node: i for i, node in enumerate(result)}\n        for node, before in deps.items():\n            for prerequisite in before:\n                self.assertLess(position[prerequisite], position[node])\n\n    def test_cycles_and_empty(self):\n        self.assertEqual(deployment_order({}), [])\n        for graph in ({\"a\": [\"a\"]}, {\"a\": [\"b\"], \"b\": [\"a\"]}):\n            with self.assertRaises(ValueError):\n                deployment_order(graph)\n\nif __name__ == \"__main__\":\n    unittest.main()",
+      "walkthrough": [
+        "Construa arestas do pré-requisito ao dependente.",
+        "Conte dependências distintas para não inflar indegree.",
+        "Heap mantém o menor serviço pronto; não ordena todo o grafo.",
+        "Se processou menos que V, existe ciclo bloqueando a conclusão."
+      ],
+      "complexity": "O(E + V log V) em tempo e O(V + E) em memória, ignorando custo de comparar nomes.",
+      "pitfalls": [
+        "Inverter arestas produz ordem errada.",
+        "Não confundir detecção de ciclo com diagnóstico do ciclo exato.",
+        "Desempate determinístico adiciona heap; fila seria O(V+E)."
+      ],
+      "run": "Salve código + testes em dag.py; execute python3 dag.py.",
+      "sourceUrl": "https://docs.python.org/3/library/heapq.html",
+      "validation": "Executado em Python 3.10: 2 testes unittest passaram, incluindo ordem, duplicação de dependência, ciclo e vazio."
+    },
+    {
+      "id": "py-async",
+      "title": "Mapa assíncrono com workers limitados",
+      "language": "Python",
+      "why": "Controlar concorrência, preservar ordem e encerrar tarefas em caso de falha.",
+      "problem": "Aplique uma coroutine a uma sequência com até concurrency workers. Preserve a ordem de entrada. Ao falhar, cancele e aguarde workers ainda ativos. As operações precisam cooperar com cancelamento.",
+      "code": "import asyncio\nfrom typing import Awaitable, Callable, List, Sequence, TypeVar, cast\n\nT = TypeVar(\"T\")\nR = TypeVar(\"R\")\n\nasync def bounded_map(items: Sequence[T], concurrency: int,\n                      fn: Callable[[T], Awaitable[R]]) -> List[R]:\n    if type(concurrency) is not int or concurrency < 1:\n        raise ValueError(\"positive concurrency required\")\n    # Every slot is filled before a successful return; failure propagates.\n    results = cast(List[R], [None] * len(items))\n    next_index = 0\n\n    async def worker():\n        nonlocal next_index\n        while next_index < len(items):\n            # No await between reading and advancing the index.\n            index = next_index\n            next_index += 1\n            results[index] = await fn(items[index])\n\n    tasks = [asyncio.create_task(worker())\n             for _ in range(min(concurrency, len(items)))]\n    try:\n        await asyncio.gather(*tasks)\n    finally:\n        for task in tasks:\n            if not task.done():\n                task.cancel()\n        await asyncio.gather(*tasks, return_exceptions=True)\n    return results",
+      "tests": "import unittest\n\nclass AsyncTests(unittest.IsolatedAsyncioTestCase):\n    async def test_limit_and_order(self):\n        active = peak = 0\n        async def double(x):\n            nonlocal active, peak\n            active += 1\n            peak = max(peak, active)\n            try:\n                await asyncio.sleep(0.001 * (5 - x))\n                return x * 2\n            finally:\n                active -= 1\n        self.assertEqual(await bounded_map([1, 2, 3, 4], 2, double), [2, 4, 6, 8])\n        self.assertLessEqual(peak, 2)\n        self.assertEqual(active, 0)\n        self.assertEqual(await bounded_map([], 2, double), [])\n\n    async def test_failure_drains_workers(self):\n        active = 0\n        async def work(x):\n            nonlocal active\n            active += 1\n            try:\n                if x == 1:\n                    await asyncio.sleep(0.001)\n                    raise RuntimeError(\"boom\")\n                await asyncio.sleep(1)\n                return x\n            finally:\n                active -= 1\n        with self.assertRaises(RuntimeError):\n            await bounded_map([0, 1, 2, 3], 2, work)\n        self.assertEqual(active, 0)\n\nif __name__ == \"__main__\":\n    unittest.main()",
+      "walkthrough": [
+        "Crie no máximo c workers, em vez de n tasks com semáforo.",
+        "O índice é seguro no mesmo event loop porque não há await no avanço.",
+        "Escreva resultado na posição original.",
+        "finally cancela e drena o que iniciou, inclusive quando o chamador cancela."
+      ],
+      "complexity": "O(n) de coordenação e memória de resultados; O(min(c,n)) tasks. Tempo de I/O depende da duração e distribuição dos itens.",
+      "pitfalls": [
+        "Não é thread-safe.",
+        "Não suporta stream infinito porque recebe Sequence.",
+        "Cancelamento não desfaz efeito remoto já concluído.",
+        "fn que bloqueia a thread prejudica todos os workers."
+      ],
+      "run": "Salve código + testes em async_map.py; execute python3 async_map.py (Python 3.10+).",
+      "sourceUrl": "https://docs.python.org/3/library/asyncio-sync.html",
+      "validation": "Executado em Python 3.10: 2 testes assíncronos passaram, incluindo limite, ordem e encerramento após falha."
+    },
+    {
+      "id": "kt-domain",
+      "title": "Tipos de domínio e saque sem mutação",
+      "language": "Kotlin",
+      "why": "Praticar sealed interface, data class, validação e when exaustivo.",
+      "problem": "Modele saque em centavos retornando novo saldo ou erro de domínio. Nenhuma dependência externa; dados são imutáveis neste exemplo.",
+      "code": "data class Account(val id: String, val cents: Long) {\n    init { require(id.isNotBlank()); require(cents >= 0) }\n}\n\nsealed interface Withdrawal\ndata class Approved(val account: Account) : Withdrawal\ndata class Declined(val reason: String) : Withdrawal\n\nfun withdraw(account: Account, amount: Long): Withdrawal = when {\n    amount <= 0 -> Declined(\"invalid_amount\")\n    amount > account.cents -> Declined(\"insufficient_funds\")\n    else -> Approved(account.copy(cents = account.cents - amount))\n}\n\nfun describe(result: Withdrawal): String = when (result) {\n    is Approved -> \"approved:${result.account.cents}\"\n    is Declined -> \"declined:${result.reason}\"\n}",
+      "tests": "fun main() {\n    val account = Account(\"A\", 1000)\n    check(withdraw(account, 300) == Approved(Account(\"A\", 700)))\n    check(withdraw(account, 1000) == Approved(Account(\"A\", 0)))\n    check(withdraw(account, 0) == Declined(\"invalid_amount\"))\n    check(withdraw(account, 1001) == Declined(\"insufficient_funds\"))\n    check(account.cents == 1000L)\n    check(describe(withdraw(account, 300)) == \"approved:700\")\n    println(\"Kotlin domain: 6 checks passed\")\n}",
+      "walkthrough": [
+        "Torne saldo negativo inválido na construção.",
+        "Modele rejeição como resultado esperado.",
+        "Crie novo Account só no caminho aprovado.",
+        "Use when para cobrir variantes sem else genérico."
+      ],
+      "complexity": "O(1) em tempo e espaço por saque.",
+      "pitfalls": [
+        "Saldo local não resolve corridas entre clientes.",
+        "val não garante imutabilidade profunda em geral.",
+        "Não traduzir toda exceção de infraestrutura em Declined."
+      ],
+      "run": "Salve código + testes em Domain.kt; execute kotlinc Domain.kt -include-runtime -d domain.jar e java -jar domain.jar (Kotlin 1.5+; validado em 2.2/JDK17).",
+      "sourceUrl": "https://kotlinlang.org/docs/sealed-classes.html",
+      "validation": "Compilado em Kotlin 2.2/JDK 17; 6 checks passaram."
+    },
+    {
+      "id": "kt-concurrency",
+      "title": "Transferência idempotente concorrente em um processo",
+      "language": "Kotlin",
+      "why": "Ver o limite de sincronização: checar chave, validar saldo e aplicar efeito juntos.",
+      "problem": "Várias threads repetem a mesma transferência. Aplique uma vez e devolva o resultado original. Recuse payload conflitante. A sincronização é local à instância e não substitui uma transação distribuída.",
+      "code": "import java.util.concurrent.Callable\nimport java.util.concurrent.Executors\n\ndata class Request(val id: String, val from: String, val to: String, val cents: Long)\ndata class Receipt(val id: String, val fromBalance: Long, val toBalance: Long)\n\nclass InMemoryBank(initial: Map<String, Long>) {\n    private val balances = initial.toMutableMap()\n    private val applied = mutableMapOf<String, Pair<Request, Receipt>>()\n    init { require(initial.values.all { it >= 0 }) }\n\n    @Synchronized\n    fun transfer(request: Request): Receipt {\n        require(request.id.isNotBlank() && request.cents > 0 && request.from != request.to)\n        applied[request.id]?.let { (original, receipt) ->\n            require(original == request) { \"idempotency_conflict\" }\n            return receipt\n        }\n        val source = requireNotNull(balances[request.from])\n        val target = requireNotNull(balances[request.to])\n        require(source >= request.cents) { \"insufficient_funds\" }\n        // Calculate every fallible value before modifying either balance.\n        val newTarget = Math.addExact(target, request.cents)\n        val receipt = Receipt(request.id, source - request.cents, newTarget)\n        balances[request.from] = receipt.fromBalance\n        balances[request.to] = receipt.toBalance\n        applied[request.id] = request to receipt\n        return receipt\n    }\n\n    @Synchronized\n    fun snapshot(): Map<String, Long> = balances.toMap()\n}",
+      "tests": "fun main() {\n    val bank = InMemoryBank(mapOf(\"A\" to 1000L, \"B\" to 0L))\n    val request = Request(\"t1\", \"A\", \"B\", 100)\n    val pool = Executors.newFixedThreadPool(8)\n    try {\n        val jobs = List(100) { Callable { bank.transfer(request) } }\n        val receipts = pool.invokeAll(jobs).map { it.get() }\n        check(receipts.toSet().size == 1)\n        check(bank.snapshot() == mapOf(\"A\" to 900L, \"B\" to 100L))\n        check(runCatching { bank.transfer(request.copy(cents = 200)) }.isFailure)\n        val overflow = InMemoryBank(mapOf(\"A\" to 10L, \"B\" to Long.MAX_VALUE))\n        check(runCatching { overflow.transfer(Request(\"x\", \"A\", \"B\", 1)) }.isFailure)\n        check(overflow.snapshot()[\"A\"] == 10L)\n        println(\"Kotlin concurrency: 5 checks passed\")\n    } finally {\n        pool.shutdownNow()\n    }\n}",
+      "walkthrough": [
+        "Proteja a operação completa no monitor da instância.",
+        "Valide repetição pelo payload, não apenas pelo ID.",
+        "Calcule overflow antes de debitar.",
+        "Retorne snapshot copiado para não expor estado mutável."
+      ],
+      "complexity": "O(1) esperado por transferência, O(a+d) memória; throughput serializado pelo monitor.",
+      "pitfalls": [
+        "Uma instância só; duas instâncias não compartilham o monitor.",
+        "Dados e dedupe somem no restart.",
+        "Um lock global limita escalabilidade.",
+        "Retenção e resultado original precisam de contrato."
+      ],
+      "run": "Salve código + testes em ConcurrentBank.kt; execute kotlinc ConcurrentBank.kt -include-runtime -d bank.jar e java -jar bank.jar.",
+      "sourceUrl": "https://kotlinlang.org/docs/data-classes.html",
+      "validation": "Compilado em Kotlin 2.2/JDK 17; 5 checks passaram, com 100 chamadas concorrentes e caso de overflow."
+    },
+    {
+      "id": "java-money",
+      "title": "Rateio monetário sem perder centavos",
+      "language": "Java",
+      "why": "Praticar BigDecimal, validação de escala e conservação.",
+      "problem": "Distribua um total não negativo com até duas casas decimais entre n pessoas. As primeiras posições recebem os centavos restantes. O total de saída deve ser exatamente o total de entrada.",
+      "code": "import java.math.BigDecimal;\nimport java.math.BigInteger;\nimport java.util.ArrayList;\nimport java.util.List;\n\npublic class MoneyLab {\n    public static List<BigDecimal> allocate(BigDecimal total, int people) {\n        if (total == null || total.signum() < 0 || people <= 0) {\n            throw new IllegalArgumentException(\"nonnegative amount and positive people required\");\n        }\n        // Reject fractional cents instead of rounding silently.\n        BigInteger cents = total.movePointRight(2).toBigIntegerExact();\n        BigInteger[] quotient = cents.divideAndRemainder(BigInteger.valueOf(people));\n        int remainder = quotient[1].intValueExact();\n        List<BigDecimal> result = new ArrayList<>(people);\n        for (int i = 0; i < people; i++) {\n            BigInteger share = quotient[0].add(i < remainder ? BigInteger.ONE : BigInteger.ZERO);\n            result.add(new BigDecimal(share, 2));\n        }\n        return List.copyOf(result);\n    }\n}",
+      "tests": "class MoneyLabTest {\n    static void verify(boolean value) {\n        if (!value) throw new AssertionError(\"check failed\");\n    }\n    public static void main(String[] args) {\n        List<BigDecimal> result = MoneyLab.allocate(new BigDecimal(\"10.00\"), 3);\n        verify(result.toString().equals(\"[3.34, 3.33, 3.33]\"));\n        verify(result.stream().reduce(BigDecimal.ZERO, BigDecimal::add)\n            .compareTo(new BigDecimal(\"10.00\")) == 0);\n        verify(MoneyLab.allocate(new BigDecimal(\"0.01\"), 3).toString()\n            .equals(\"[0.01, 0.00, 0.00]\"));\n        boolean rejected = false;\n        try { MoneyLab.allocate(new BigDecimal(\"0.001\"), 2); }\n        catch (ArithmeticException expected) { rejected = true; }\n        verify(rejected);\n        System.out.println(\"Java money: 4 checks passed\");\n    }\n}",
+      "walkthrough": [
+        "Converta decimais para centavos exatos.",
+        "Divida total em quociente e resto.",
+        "Distribua um centavo adicional por posição até consumir o resto.",
+        "Verifique soma e rejeição de fração de centavo."
+      ],
+      "complexity": "O(n) itens e memória; custo aritmético também depende do tamanho do BigInteger.",
+      "pitfalls": [
+        "A ordem dos destinatários faz parte da política de fairness.",
+        "Este lab assume escala 2; nem toda moeda tem essa escala.",
+        "Um número gigantesco de pessoas precisa de limites de entrada."
+      ],
+      "run": "Salve código + testes em MoneyLab.java; execute javac MoneyLab.java e java MoneyLabTest (Java 11+).",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/math/BigDecimal.html",
+      "validation": "Compilado e executado em JDK 17; 4 checks passaram, incluindo conservação e fração de centavo rejeitada."
+    },
+    {
+      "id": "clj-rules",
+      "title": "Núcleo funcional de autorização",
+      "language": "Clojure",
+      "why": "Ler regras como transformação de dados, sem estado global.",
+      "problem": "Autorize um gasto inteiro positivo se conta ativa, saldo suficiente e limite por operação respeitado. Retorne mapa de resultado sem modificar entrada.",
+      "code": "(ns rules-lab\n  (:require [clojure.test :refer [deftest is run-tests]]))\n\n(defn authorize [account cents]\n  (cond\n    (not (and (integer? cents) (pos? cents)))\n    {:status :declined :reason :invalid-amount}\n\n    (not (:active? account))\n    {:status :declined :reason :inactive-account}\n\n    (> cents (:limit-cents account))\n    {:status :declined :reason :operation-limit}\n\n    (> cents (:balance-cents account))\n    {:status :declined :reason :insufficient-funds}\n\n    :else\n    {:status :approved\n     :account (update account :balance-cents - cents)}))",
+      "tests": "(deftest authorization-test\n  (let [account {:active? true :balance-cents 1000 :limit-cents 500}]\n    (is (= 700 (get-in (authorize account 300) [:account :balance-cents])))\n    (is (= :operation-limit (:reason (authorize account 600))))\n    (is (= :invalid-amount (:reason (authorize account -1))))\n    (is (= :inactive-account (:reason (authorize (assoc account :active? false) 10))))\n    (is (= :insufficient-funds\n           (:reason (authorize (assoc account :balance-cents 10) 20)))))\n  (is (= :invalid-amount (:reason (authorize {} nil)))))\n\n(let [result (run-tests 'rules-lab)]\n  (when (pos? (+ (:fail result) (:error result)))\n    (System/exit 1)))",
+      "walkthrough": [
+        "cond documenta prioridade das rejeições.",
+        "update cria novo mapa com saldo alterado.",
+        "A função pressupõe conta normalizada quando ativa.",
+        "Teste borda, prioridade de erro e entrada inválida."
+      ],
+      "complexity": "O(1) para quantidade fixa de regras; custo de mapa persistente é pequeno e depende da estrutura.",
+      "pitfalls": [
+        "Payload de conta deve ser validado na borda.",
+        "Não há reserva durável de saldo.",
+        "Mudar ordem de regras pode mudar razão retornada."
+      ],
+      "run": "Salve código + testes em rules.clj; execute clojure rules.clj (Clojure 1.11+; clojure.test incluído).",
+      "sourceUrl": "https://clojure.org/reference/reader",
+      "validation": "Não executado: runtime Clojure indisponível. Revisão manual e verificação de delimitadores concluídas; testes incluídos para execução local."
+    },
+    {
+      "id": "clj-atom",
+      "title": "Deduplicação atômica sem efeitos em swap!",
+      "language": "Clojure",
+      "why": "Separar transição pura de atualização de estado independente.",
+      "problem": "Aplique depósitos inteiros positivos por ID em um único atom. Duplicatas idênticas não alteram saldo; payload conflitante falha. A função de swap! não executa I/O.",
+      "code": "(ns atom-lab\n  (:require [clojure.test :refer [deftest is run-tests]]))\n\n(defn apply-deposit [state {:keys [id cents] :as event}]\n  (when-not (and (string? id) (not (empty? id)) (integer? cents) (pos? cents))\n    (throw (ex-info \"invalid event\" {:event event})))\n  (if (contains? (:seen state) id)\n    (if (= cents (get-in state [:seen id]))\n      state\n      (throw (ex-info \"idempotency conflict\" {:id id})))\n    (-> state\n        (update :balance + cents)\n        (assoc-in [:seen id] cents))))\n\n(defn deposit! [state event]\n  (swap! state apply-deposit event))",
+      "tests": "(deftest deduplication-test\n  (let [state (atom {:balance 0 :seen {}})\n        event {:id \"d1\" :cents 100}]\n    (dotimes [_ 100] (deposit! state event))\n    (is (= 100 (:balance @state)))\n    (is (= {\"d1\" 100} (:seen @state)))\n    (is (thrown-with-msg? clojure.lang.ExceptionInfo #\"conflict\"\n          (deposit! state {:id \"d1\" :cents 200})))\n    (is (= 100 (:balance @state)))\n    (deposit! state {:id \"d2\" :cents 50})\n    (is (= 150 (:balance @state)))))\n\n(let [result (run-tests 'atom-lab)]\n  (when (pos? (+ (:fail result) (:error result)))\n    (System/exit 1)))",
+      "walkthrough": [
+        "Um mapa agrupa saldo e dedupe no mesmo limite atômico.",
+        "apply-deposit é pura e pode ser tentada novamente.",
+        "@ lê o snapshot atual.",
+        "Discuta persistência, overflow e crescimento de seen."
+      ],
+      "complexity": "Atualização de mapa persistente; sob competição, swap! pode repetir computação. Memória O(d) para d IDs.",
+      "pitfalls": [
+        "Não enviar mensagens dentro de swap!.",
+        "Não coordena processos diferentes.",
+        "Um crash perde o atom.",
+        "A política de retenção de IDs não está implementada."
+      ],
+      "run": "Salve código + testes em atom.clj; execute clojure atom.clj.",
+      "sourceUrl": "https://clojure.org/reference/atoms",
+      "validation": "Não executado: runtime Clojure indisponível. Revisão manual e verificação de delimitadores concluídas; testes incluídos para execução local."
+    },
+    {
+      "id": "ts-state",
+      "title": "Máquina de estados de pagamento",
+      "language": "TypeScript",
+      "why": "Modelar transições legais e estados impossíveis com união discriminada.",
+      "problem": "Autorize pending e capture authorized. Recuse outras transições. Um capture repetido com mesmo ID retorna o estado atual. IDs e centavos são dados de domínio; validação externa completa fica na borda.",
+      "code": "type Payment =\n  | { status: \"pending\"; cents: bigint }\n  | { status: \"authorized\"; cents: bigint; authorizationId: string }\n  | { status: \"captured\"; cents: bigint; authorizationId: string; captureId: string };\n\ntype Command =\n  | { type: \"authorize\"; authorizationId: string }\n  | { type: \"capture\"; captureId: string };\n\nfunction transition(state: Payment, command: Command): Payment {\n  if (state.cents <= 0n) throw new Error(\"invalid_amount\");\n  switch (command.type) {\n    case \"authorize\":\n      if (!command.authorizationId.trim()) throw new Error(\"invalid_id\");\n      if (state.status !== \"pending\") throw new Error(\"invalid_transition\");\n      return { ...state, status: \"authorized\", authorizationId: command.authorizationId };\n    case \"capture\":\n      if (!command.captureId.trim()) throw new Error(\"invalid_id\");\n      if (state.status === \"captured\" && state.captureId === command.captureId) return state;\n      if (state.status !== \"authorized\") throw new Error(\"invalid_transition\");\n      return { ...state, status: \"captured\", captureId: command.captureId };\n    default: {\n      const unreachable: never = command;\n      throw new Error(`unknown command: ${String(unreachable)}`);\n    }\n  }\n}",
+      "tests": "function check(value: boolean): void { if (!value) throw new Error(\"check failed\"); }\nfunction throws(fn: () => unknown): boolean { try { fn(); return false; } catch { return true; } }\nconst pending: Payment = { status: \"pending\", cents: 1200n };\nconst authorized = transition(pending, { type: \"authorize\", authorizationId: \"a1\" });\nconst captured = transition(authorized, { type: \"capture\", captureId: \"c1\" });\ncheck(captured.status === \"captured\");\ncheck(transition(captured, { type: \"capture\", captureId: \"c1\" }) === captured);\ncheck(throws(() => transition(pending, { type: \"capture\", captureId: \"c1\" })));\ncheck(throws(() => transition(captured, { type: \"capture\", captureId: \"c2\" })));\ncheck(pending.status === \"pending\");\nconsole.log(\"TypeScript states: 5 checks passed\");",
+      "walkthrough": [
+        "Estado carrega somente propriedades válidas naquela fase.",
+        "O discriminante estreita o tipo antes do acesso.",
+        "Repetição de captura tem regra explícita.",
+        "Use never para alertar em tempo de compilação quando surgir comando novo."
+      ],
+      "complexity": "O(1) em quantidade de propriedades; BigInt depende do tamanho do número.",
+      "pitfalls": [
+        "TypeScript não valida JSON automaticamente.",
+        "Dedupe em memória não é transação durável.",
+        "BigInt precisa de conversão explícita para JSON.",
+        "Não há estorno neste contrato."
+      ],
+      "run": "Salve código + testes em state.ts. Execute node state.ts em Node 24+ com type stripping; para checagem estática use tsc --strict --target ES2020 --module commonjs state.ts e node state.js.",
+      "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html",
+      "validation": "Executado em Node 24.3 com remoção de tipos: 5 checks passaram. Compilação estática com tsc não foi executada neste ambiente."
+    },
+    {
+      "id": "ts-workers",
+      "title": "Concorrência limitada e erro drenado",
+      "language": "TypeScript",
+      "why": "Evitar fan-out sem limite e entender o que uma rejeição de promise significa.",
+      "problem": "Mapeie itens com concorrência limitada e ordem preservada. Ao primeiro erro, pare de iniciar novos itens assim que o erro for observado; aguarde os itens em andamento antes de rejeitar.",
+      "code": "async function mapLimited<T, R>(\n  items: readonly T[], limit: number, fn: (item: T, index: number) => Promise<R>\n): Promise<R[]> {\n  if (!Number.isInteger(limit) || limit < 1) throw new Error(\"invalid_limit\");\n  const results = new Array<R>(items.length);\n  let next = 0;\n  let failed = false;\n  let firstError: unknown;\n  async function worker(): Promise<void> {\n    while (!failed && next < items.length) {\n      const index = next++;\n      try {\n        results[index] = await fn(items[index], index);\n      } catch (error) {\n        if (!failed) { failed = true; firstError = error; }\n      }\n    }\n  }\n  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => worker()));\n  if (failed) throw firstError;\n  return results;\n}",
+      "tests": "function check(value: boolean): void { if (!value) throw new Error(\"check failed\"); }\nconst delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));\nasync function tests(): Promise<void> {\n  let active = 0, peak = 0;\n  const result = await mapLimited([1, 2, 3, 4], 2, async value => {\n    active++; peak = Math.max(peak, active);\n    try { await delay(5 - value); return value * 2; } finally { active--; }\n  });\n  check(JSON.stringify(result) === \"[2,4,6,8]\");\n  check(peak <= 2 && active === 0);\n  let rejected = false;\n  try {\n    await mapLimited([0, 1, 2, 3], 2, async value => {\n      active++;\n      try { await delay(value === 1 ? 1 : 10); if (value === 1) throw new Error(\"boom\"); return value; }\n      finally { active--; }\n    });\n  } catch { rejected = true; }\n  check(rejected && active === 0);\n  check((await mapLimited([], 2, async x => x)).length === 0);\n  console.log(\"TypeScript workers: 4 checks passed\");\n}\nvoid tests().catch(error => { console.error(error); throw error; });",
+      "walkthrough": [
+        "O avanço de next ocorre sem await no event loop.",
+        "Cada worker guarda resultado no índice original.",
+        "Uma flag separada distingue falha de um erro cujo valor seja undefined.",
+        "Drenar não cancela efeitos; o lab espera os já iniciados."
+      ],
+      "complexity": "O(n) coordenação e memória de resultados; O(min(n,limit)) workers.",
+      "pitfalls": [
+        "Não é rate limiter por tempo.",
+        "Uma função que nunca conclui ainda precisa de timeout.",
+        "Parada de novos itens ocorre após observação do erro, não no instante remoto.",
+        "Não oferece rollback dos efeitos concluídos."
+      ],
+      "run": "Salve código + testes em workers.ts. Execute node workers.ts (Node 24+). Para checagem estática: tsc --strict --target ES2020 --module commonjs workers.ts.",
+      "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html",
+      "validation": "Executado em Node 24.3 com remoção de tipos: 4 checks passaram, incluindo drenagem de erro. Compilação estática com tsc não foi executada neste ambiente."
+    },
+    {
+      "id": "sql-transfer",
+      "title": "Transferência atômica e ordem de locks",
+      "language": "SQL",
+      "why": "Aplicar saldo condicionado e rollback numa transação PostgreSQL.",
+      "problem": "Em um banco de treino, crie contas temporárias e uma função de transferência. Bloqueie contas por ID em ordem, valide saldo e aplique as duas mudanças. O lab inteiro usa BEGIN/ROLLBACK e tabelas temporárias.",
+      "code": "BEGIN;\nCREATE TEMP TABLE accounts (\n  id text PRIMARY KEY,\n  balance bigint NOT NULL CHECK (balance >= 0)\n);\nINSERT INTO accounts VALUES ('A', 1000), ('B', 100);\n\nCREATE FUNCTION pg_temp.transfer(p_from text, p_to text, p_amount bigint)\nRETURNS void LANGUAGE plpgsql AS $$\nDECLARE touched integer;\nBEGIN\n  IF p_from IS NULL OR p_to IS NULL OR p_from = p_to\n     OR p_amount IS NULL OR p_amount <= 0 THEN\n    RAISE EXCEPTION 'invalid transfer';\n  END IF;\n  PERFORM id FROM accounts WHERE id IN (p_from, p_to) ORDER BY id FOR UPDATE;\n  GET DIAGNOSTICS touched = ROW_COUNT;\n  IF touched <> 2 THEN RAISE EXCEPTION 'unknown account'; END IF;\n  UPDATE accounts SET balance = balance - p_amount\n    WHERE id = p_from AND balance >= p_amount;\n  IF NOT FOUND THEN RAISE EXCEPTION 'insufficient funds'; END IF;\n  UPDATE accounts SET balance = balance + p_amount WHERE id = p_to;\nEND;\n$$;",
+      "tests": "SELECT pg_temp.transfer('A', 'B', 300);\nDO $$\nBEGIN\n  IF (SELECT balance FROM accounts WHERE id='A') <> 700\n     OR (SELECT balance FROM accounts WHERE id='B') <> 400 THEN\n    RAISE EXCEPTION 'wrong balances';\n  END IF;\n  BEGIN\n    PERFORM pg_temp.transfer('A', 'B', 5000);\n    RAISE EXCEPTION 'expected rejection';\n  EXCEPTION WHEN raise_exception THEN\n    IF SQLERRM <> 'insufficient funds' THEN RAISE; END IF;\n  END;\n  IF (SELECT sum(balance) FROM accounts) <> 1100 THEN\n    RAISE EXCEPTION 'conservation failed';\n  END IF;\nEND;\n$$;\nSELECT * FROM accounts ORDER BY id;\nROLLBACK;",
+      "walkthrough": [
+        "BEGIN agrupa o exercício e ROLLBACK remove seus objetos.",
+        "Adquira locks em ordem comum para transferências nos dois sentidos.",
+        "O UPDATE condicionado verifica saldo na escrita.",
+        "Exceção interrompe o efeito; ainda trate deadlock e retry no chamador real."
+      ],
+      "complexity": "Busca por chaves B-tree e duas atualizações; custo depende de contenção, WAL e índices, não só O(log n).",
+      "pitfalls": [
+        "Ainda não há idempotência: repetir chamada duplica transferência.",
+        "Não é contabilidade de partidas dobradas completa.",
+        "Teste em duas sessões é necessário para avaliar concorrência real.",
+        "Qualifique schemas e políticas em código de produção."
+      ],
+      "run": "Salve código + testes em transfer.sql. Use banco local de treino: psql -v ON_ERROR_STOP=1 -f transfer.sql. PostgreSQL 14+.",
+      "sourceUrl": "https://www.postgresql.org/docs/17/explicit-locking.html",
+      "validation": "Executado em PostgreSQL 16.13 isolado local; script e assertions passaram com ON_ERROR_STOP. Teste concorrente entre sessões não realizado."
+    },
+    {
+      "id": "sql-window",
+      "title": "Extrato, saldo acumulado e paginação por cursor",
+      "language": "SQL",
+      "why": "Praticar funções de janela, ordem total e índice orientado à consulta.",
+      "problem": "Calcule saldo acumulado por conta e pagine eventos por (occurred_at,id). Valores são lançamentos assinados; saldos de abertura são zero neste exercício.",
+      "code": "BEGIN;\nCREATE TEMP TABLE entries (\n  id bigint PRIMARY KEY,\n  account_id text NOT NULL,\n  occurred_at timestamptz NOT NULL,\n  cents bigint NOT NULL\n);\nINSERT INTO entries VALUES\n (1,'A','2026-01-01T10:00:00Z',1000),\n (2,'A','2026-01-01T10:00:00Z',-300),\n (3,'A','2026-01-01T11:00:00Z',50),\n (4,'B','2026-01-01T10:00:00Z',500);\nCREATE INDEX entries_account_cursor ON entries(account_id, occurred_at, id);\n\nCREATE TEMP VIEW statement AS\nSELECT id, account_id, occurred_at, cents,\n       sum(cents) OVER (\n         PARTITION BY account_id ORDER BY occurred_at,id\n         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n       ) AS balance\nFROM entries;\n\nSELECT * FROM statement WHERE account_id='A' ORDER BY occurred_at,id;\nSELECT id,cents FROM entries\nWHERE account_id='A'\n  AND (occurred_at,id) > ('2026-01-01T10:00:00Z'::timestamptz,1::bigint)\nORDER BY occurred_at,id LIMIT 2;",
+      "tests": "DO $$\nDECLARE balances numeric[]; ids bigint[];\nBEGIN\n  SELECT array_agg(balance ORDER BY occurred_at,id) INTO balances\n    FROM statement WHERE account_id='A';\n  IF balances <> ARRAY[1000,700,750]::numeric[] THEN\n    RAISE EXCEPTION 'window mismatch';\n  END IF;\n  SELECT array_agg(id ORDER BY occurred_at,id) INTO ids\n    FROM entries WHERE account_id='A'\n      AND (occurred_at,id) > ('2026-01-01T10:00:00Z'::timestamptz,1::bigint);\n  IF ids <> ARRAY[2,3]::bigint[] THEN RAISE EXCEPTION 'cursor mismatch'; END IF;\nEND;\n$$;\nEXPLAIN (ANALYZE, BUFFERS)\nSELECT * FROM entries WHERE account_id='A' ORDER BY occurred_at,id LIMIT 2;\nROLLBACK;",
+      "walkthrough": [
+        "id desempata eventos com mesmo timestamp.",
+        "ROWS expressa acúmulo linha a linha na ordem total.",
+        "Calcule janela antes de filtrar uma página se precisar do saldo histórico completo.",
+        "Keyset evita grandes OFFSETs; contrato de estabilidade ainda precisa considerar inserções retroativas."
+      ],
+      "complexity": "Janela pode exigir O(n log n) de ordenação; índice pode apoiar acesso ordenado. Paginação por cursor evita descartar todo o prefixo com OFFSET.",
+      "pitfalls": [
+        "Filtrar a janela no lugar errado reinicia saldo da página.",
+        "Dados retroativos podem mudar páginas e saldos; use snapshot/watermark se necessário.",
+        "Com quatro linhas, sequential scan pode ser a melhor escolha."
+      ],
+      "run": "Salve código + testes em statement.sql; execute psql -v ON_ERROR_STOP=1 -f statement.sql num banco de treino.",
+      "sourceUrl": "https://www.postgresql.org/docs/current/tutorial-window.html",
+      "validation": "Executado em PostgreSQL 16.13 isolado local; saldos, cursor e EXPLAIN ANALYZE passaram. Dataset pequeno, sem benchmark de escala."
+    },
+    {
+      "id": "sql-inbox",
+      "title": "Inbox idempotente + outbox na mesma transação",
+      "language": "SQL",
+      "why": "Proteger efeito local e intenção de publicação contra reentrega.",
+      "problem": "Aplique depósitos por event_id uma única vez. Repetição idêntica devolve false; payload conflitante falha. Registre outbox junto ao saldo. O publicador e consumidores downstream continuam precisando lidar com duplicatas.",
+      "code": "BEGIN;\nCREATE TEMP TABLE balances(account_id text PRIMARY KEY, cents bigint NOT NULL CHECK(cents>=0));\nCREATE TEMP TABLE inbox(event_id text PRIMARY KEY, account_id text NOT NULL, cents bigint NOT NULL);\nCREATE TEMP TABLE outbox(event_id text PRIMARY KEY, payload jsonb NOT NULL, published_at timestamptz);\nINSERT INTO balances VALUES ('A',0);\n\nCREATE FUNCTION pg_temp.deposit(p_id text, p_account text, p_cents bigint)\nRETURNS boolean LANGUAGE plpgsql AS $$\nDECLARE inserted text; previous inbox%ROWTYPE;\nBEGIN\n  IF p_id IS NULL OR p_id = '' OR p_account IS NULL\n     OR p_cents IS NULL OR p_cents <= 0 THEN\n    RAISE EXCEPTION 'invalid event';\n  END IF;\n  INSERT INTO inbox VALUES(p_id,p_account,p_cents)\n    ON CONFLICT (event_id) DO NOTHING RETURNING event_id INTO inserted;\n  IF inserted IS NULL THEN\n    SELECT * INTO STRICT previous FROM inbox WHERE event_id=p_id;\n    IF previous.account_id <> p_account OR previous.cents <> p_cents THEN\n      RAISE EXCEPTION 'idempotency conflict';\n    END IF;\n    RETURN false;\n  END IF;\n  UPDATE balances SET cents=cents+p_cents WHERE account_id=p_account;\n  IF NOT FOUND THEN RAISE EXCEPTION 'unknown account'; END IF;\n  INSERT INTO outbox(event_id,payload)\n    VALUES(p_id,jsonb_build_object('type','deposit_applied','accountId',p_account,'cents',p_cents));\n  RETURN true;\nEND;\n$$;",
+      "tests": "DO $$\nBEGIN\n  IF NOT pg_temp.deposit('e1','A',100) THEN RAISE EXCEPTION 'first apply failed'; END IF;\n  IF pg_temp.deposit('e1','A',100) THEN RAISE EXCEPTION 'duplicate applied'; END IF;\n  BEGIN\n    PERFORM pg_temp.deposit('e1','A',200);\n    RAISE EXCEPTION 'expected conflict';\n  EXCEPTION WHEN raise_exception THEN\n    IF SQLERRM <> 'idempotency conflict' THEN RAISE; END IF;\n  END;\n  IF (SELECT cents FROM balances WHERE account_id='A') <> 100\n     OR (SELECT count(*) FROM outbox) <> 1 THEN\n    RAISE EXCEPTION 'invariant failed';\n  END IF;\nEND;\n$$;\nSELECT * FROM outbox;\nROLLBACK;",
+      "walkthrough": [
+        "Constraint unique disputa a identidade da operação.",
+        "Compare payload se a chave já existia.",
+        "Saldo e outbox pertencem à mesma transação.",
+        "Um relay publica outbox depois; crash após publicar e antes de marcar gera duplicata possível."
+      ],
+      "complexity": "Operações indexadas por chave mais atualização de uma conta; contenção por chave/conta pode dominar.",
+      "pitfalls": [
+        "Exemplo assume Read Committed; níveis mais fortes podem exigir retry da transação.",
+        "Tabelas temporárias isolam sessões; adapte schema de treino persistente para testar concorrência entre sessões.",
+        "Retenção de inbox limita horizonte de dedupe.",
+        "Outbox não garante entrega exatamente uma vez fora do banco."
+      ],
+      "run": "Salve código + testes em inbox.sql; execute psql -v ON_ERROR_STOP=1 -f inbox.sql num banco local de treino.",
+      "sourceUrl": "https://www.postgresql.org/docs/current/indexes-unique.html",
+      "validation": "Executado em PostgreSQL 16.13 isolado local; repetição, conflito e invariantes passaram. Teste concorrente entre sessões não realizado."
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "card-001",
+      "category": "Python",
+      "q": "Como importar fila eficiente para BFS?",
+      "a": "from collections import deque; q = deque([start]); current = q.popleft(). Marque visitado ao enfileirar."
+    },
+    {
+      "id": "card-002",
+      "category": "Python",
+      "q": "Como percorrer valor e índice?",
+      "a": "for i, value in enumerate(values): ...; enumerate começa em 0 por padrão."
+    },
+    {
+      "id": "card-003",
+      "category": "Python",
+      "q": "Como ordenar por campo e desempatar?",
+      "a": "sorted(items, key=lambda x: (x[\"timestamp\"], x[\"id\"])). Declare o contrato de desempate."
+    },
+    {
+      "id": "card-004",
+      "category": "Python",
+      "q": "Como contar frequências?",
+      "a": "from collections import Counter; counts = Counter(values); counts[key] devolve 0 para chave ausente."
+    },
+    {
+      "id": "card-005",
+      "category": "Python",
+      "q": "Como criar listas independentes por chave?",
+      "a": "from collections import defaultdict; groups = defaultdict(list); groups[key].append(value)."
+    },
+    {
+      "id": "card-006",
+      "category": "Python",
+      "q": "Qual a diferença entre append e extend?",
+      "a": "append(x) adiciona x como um item; extend(xs) adiciona cada elemento de xs."
+    },
+    {
+      "id": "card-007",
+      "category": "Python",
+      "q": "Por que evitar def f(xs=[])?",
+      "a": "O argumento padrão é criado uma vez e pode ser compartilhado entre chamadas. Use None e crie a lista dentro."
+    },
+    {
+      "id": "card-008",
+      "category": "Python",
+      "q": "Como usar heap mínimo?",
+      "a": "from heapq import heappush, heappop; heap=[]; heappush(heap, value); smallest=heappop(heap)."
+    },
+    {
+      "id": "card-009",
+      "category": "Python",
+      "q": "Qual o risco de [[0]*3]*3?",
+      "a": "As linhas apontam para a mesma lista. Use [[0]*3 for _ in range(3)] para listas internas independentes."
+    },
+    {
+      "id": "card-010",
+      "category": "Python",
+      "q": "O que async with lock protege?",
+      "a": "Uma região entre tarefas que usam aquele lock de asyncio. Não protege threads de sistema nem outros processos."
+    },
+    {
+      "id": "card-011",
+      "category": "Algoritmos",
+      "q": "Por que consultar complemento antes de inserir no two-sum?",
+      "a": "Para não combinar o elemento atual consigo mesmo; o mapa deve representar somente índices anteriores."
+    },
+    {
+      "id": "card-012",
+      "category": "Algoritmos",
+      "q": "Quando BFS fornece menor caminho?",
+      "a": "Em número de arestas, ou quando cada aresta tem o mesmo peso. Pesos diferentes exigem outro argumento/algoritmo."
+    },
+    {
+      "id": "card-013",
+      "category": "Algoritmos",
+      "q": "Qual restrição de pesos do Dijkstra usual?",
+      "a": "Pesos não negativos. Peso negativo pode invalidar a escolha definitiva do menor vértice."
+    },
+    {
+      "id": "card-014",
+      "category": "Algoritmos",
+      "q": "Qual o invariante do lower_bound?",
+      "a": "Elementos antes de lo são menores que o alvo; elementos a partir de hi são maiores ou iguais. Examine [lo,hi) e retorne lo quando lo==hi."
+    },
+    {
+      "id": "card-015",
+      "category": "Algoritmos",
+      "q": "Como detectar ciclo com Kahn?",
+      "a": "Remova vértices de indegree zero; se o total processado for menor que V, existe ciclo."
+    },
+    {
+      "id": "card-016",
+      "category": "Algoritmos",
+      "q": "Quanto custa top-k com heap limitado?",
+      "a": "O(n log k) para processar e O(k) memória; se ordenar a saída, some O(k log k)."
+    },
+    {
+      "id": "card-017",
+      "category": "Algoritmos",
+      "q": "O que define um estado correto em DP?",
+      "a": "Ele contém toda informação necessária para decisões futuras, além de transição, caso base e ordem de cálculo."
+    },
+    {
+      "id": "card-018",
+      "category": "Algoritmos",
+      "q": "Por que sliding window de soma pode falhar com negativos?",
+      "a": "Remover ou adicionar um número deixa de alterar a soma na direção previsível usada pelo argumento monotônico."
+    },
+    {
+      "id": "card-019",
+      "category": "Kotlin",
+      "q": "Como declarar uma data class?",
+      "a": "data class Account(val id: String, val cents: Long). Propriedades do construtor principal participam dos métodos gerados."
+    },
+    {
+      "id": "card-020",
+      "category": "Kotlin",
+      "q": "val significa objeto profundamente imutável?",
+      "a": "Não. Impede reatribuição da referência; uma MutableList referenciada ainda pode mudar."
+    },
+    {
+      "id": "card-021",
+      "category": "Kotlin",
+      "q": "Como tratar null sem !!?",
+      "a": "Use ?. para acesso seguro, ?: para fallback, if/when para tratamento ou requireNotNull quando ausência viola contrato."
+    },
+    {
+      "id": "card-022",
+      "category": "Kotlin",
+      "q": "Para que serve sealed interface?",
+      "a": "Restringe a hierarquia direta e permite when exaustivo para variantes conhecidas; ajuda modelar resultados e estados."
+    },
+    {
+      "id": "card-023",
+      "category": "Kotlin",
+      "q": "copy() de data class é cópia profunda?",
+      "a": "Não. Objetos referenciados, incluindo coleções mutáveis, podem continuar compartilhados."
+    },
+    {
+      "id": "card-024",
+      "category": "Kotlin",
+      "q": "suspend significa rodar numa thread nova?",
+      "a": "Não. Marca função que pode suspender; escopo, dispatcher e builders determinam a execução concorrente."
+    },
+    {
+      "id": "card-025",
+      "category": "Kotlin",
+      "q": "Como detectar overflow ao somar Long na JVM?",
+      "a": "Math.addExact(a, b) lança ArithmeticException se o resultado não couber. Calcule antes de alterar estado."
+    },
+    {
+      "id": "card-026",
+      "category": "Kotlin",
+      "q": "ConcurrentHashMap torna get/check/put atômico?",
+      "a": "Não como sequência. Proteja o invariante completo ou use uma operação atômica/transação apropriada."
+    },
+    {
+      "id": "card-027",
+      "category": "Java",
+      "q": "Como construir valor decimal previsível?",
+      "a": "new BigDecimal(\"10.25\"). Evite criar a partir de double quando a origem pretendida é decimal exata."
+    },
+    {
+      "id": "card-028",
+      "category": "Java",
+      "q": "BigDecimal equals e compareTo concordam sempre?",
+      "a": "Não: 1.0 e 1.00 são iguais numericamente em compareTo, mas diferentes em equals por causa da escala."
+    },
+    {
+      "id": "card-029",
+      "category": "Java",
+      "q": "Como impedir fração de centavo silenciosa?",
+      "a": "total.movePointRight(2).toBigIntegerExact() rejeita valor com fração de centavo neste contrato de escala 2."
+    },
+    {
+      "id": "card-030",
+      "category": "Java",
+      "q": "Como preservar total num rateio?",
+      "a": "Divida centavos em quociente e resto e distribua os centavos restantes por uma ordem determinística."
+    },
+    {
+      "id": "card-031",
+      "category": "Clojure",
+      "q": "Qual a ordem numa chamada Clojure?",
+      "a": "Operador primeiro: (+ 2 3), (authorize account amount)."
+    },
+    {
+      "id": "card-032",
+      "category": "Clojure",
+      "q": "Como definir função e binding local?",
+      "a": "(defn total [xs] (let [initial 0] (reduce + initial xs)))."
+    },
+    {
+      "id": "card-033",
+      "category": "Clojure",
+      "q": "assoc e update fazem o quê?",
+      "a": "assoc define valor de uma chave; update aplica função ao valor atual. Ambos retornam nova estrutura persistente."
+    },
+    {
+      "id": "card-034",
+      "category": "Clojure",
+      "q": "Como acessar campo aninhado?",
+      "a": "(get-in state [:account :balance]); para atualizar use assoc-in ou update-in."
+    },
+    {
+      "id": "card-035",
+      "category": "Clojure",
+      "q": "Como ler e alterar atom?",
+      "a": "@state lê; (swap! state f arg) aplica f atomicamente. f pode ser reexecutada."
+    },
+    {
+      "id": "card-036",
+      "category": "Clojure",
+      "q": "Por que não enviar email dentro de swap!?",
+      "a": "Retries da função podem repetir efeitos. Mantenha a transição pura e coordene efeitos numa borda apropriada."
+    },
+    {
+      "id": "card-037",
+      "category": "Clojure",
+      "q": "Qual caso base útil de reduce para soma?",
+      "a": "(reduce + 0 xs). O acumulador inicial 0 também resolve xs vazio."
+    },
+    {
+      "id": "card-038",
+      "category": "Clojure",
+      "q": "Imutabilidade elimina necessidade de transação?",
+      "a": "Não. Escritas concorrentes e efeitos duráveis ainda precisam de coordenação dos invariantes."
+    },
+    {
+      "id": "card-039",
+      "category": "TypeScript",
+      "q": "unknown ou any na entrada externa?",
+      "a": "Prefira unknown e valide/refine. any desativa checagens e não valida dado em runtime."
+    },
+    {
+      "id": "card-040",
+      "category": "TypeScript",
+      "q": "Como estreitar união discriminada?",
+      "a": "Verifique um campo literal: if (result.ok) { ... }; ou switch (state.status)."
+    },
+    {
+      "id": "card-041",
+      "category": "TypeScript",
+      "q": "O que const x: never = value verifica?",
+      "a": "Que todas as variantes foram tratadas no ponto em que value deveria ser impossível."
+    },
+    {
+      "id": "card-042",
+      "category": "TypeScript",
+      "q": "as Payment valida JSON?",
+      "a": "Não. Assertion só informa o compilador; use validação de formato e semântica em runtime."
+    },
+    {
+      "id": "card-043",
+      "category": "TypeScript",
+      "q": "Promise.all cancela tarefas quando uma falha?",
+      "a": "Não automaticamente. Operações já iniciadas podem continuar e precisam de cancelamento/drenagem explícitos."
+    },
+    {
+      "id": "card-044",
+      "category": "TypeScript",
+      "q": "Por que await array.forEach(async ...) falha?",
+      "a": "forEach não agrega promises. Use for...of sequencial ou uma estratégia explícita de concorrência."
+    },
+    {
+      "id": "card-045",
+      "category": "TypeScript",
+      "q": "Como transportar BigInt em JSON?",
+      "a": "Converta para string decimal com unidade e moeda definidas; valide e converta de volta na fronteira."
+    },
+    {
+      "id": "card-046",
+      "category": "TypeScript",
+      "q": "Limitar concorrência é limitar requests por segundo?",
+      "a": "Não. Concorrência limita operações em voo; taxa limita inícios/aceitações numa unidade de tempo."
+    },
+    {
+      "id": "card-047",
+      "category": "SQL",
+      "q": "GROUP BY e janela diferem como?",
+      "a": "GROUP BY agrega linhas em grupos; funções com OVER calculam sobre conjuntos mantendo as linhas."
+    },
+    {
+      "id": "card-048",
+      "category": "SQL",
+      "q": "Como evitar saldo acumulado ambíguo em timestamps iguais?",
+      "a": "Inclua desempate estável no ORDER BY e frame ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW."
+    },
+    {
+      "id": "card-049",
+      "category": "SQL",
+      "q": "Um join pode aumentar soma sem novos fatos de negócio?",
+      "a": "Sim, por multiplicação um-para-muitos. Defina granularidade e agregue na ordem correta."
+    },
+    {
+      "id": "card-050",
+      "category": "SQL",
+      "q": "Como fazer débito condicionado ao saldo?",
+      "a": "UPDATE ... SET balance=balance-amount WHERE id=... AND balance>=amount RETURNING balance; verifique linha afetada."
+    },
+    {
+      "id": "card-051",
+      "category": "SQL",
+      "q": "Como reduzir deadlock A→B versus B→A?",
+      "a": "Bloqueie contas na mesma ordenação de IDs e trate abortos com retry seguro da transação inteira."
+    },
+    {
+      "id": "card-052",
+      "category": "SQL",
+      "q": "Read Committed congela snapshot da transação inteira?",
+      "a": "No PostgreSQL, não: comandos sucessivos podem observar commits diferentes."
+    },
+    {
+      "id": "card-053",
+      "category": "SQL",
+      "q": "Serializable significa que nunca ocorre erro concorrente?",
+      "a": "Não. Pode abortar uma transação para preservar a semântica; o chamador deve estar preparado para retry."
+    },
+    {
+      "id": "card-054",
+      "category": "SQL",
+      "q": "PRIMARY KEY precisa de outro índice igual no PostgreSQL?",
+      "a": "Não. A constraint já cria o índice correspondente; duplicá-lo adiciona custo."
+    },
+    {
+      "id": "card-055",
+      "category": "SQL",
+      "q": "Por que EXPLAIN ANALYZE exige cuidado?",
+      "a": "Ele executa a consulta. Em escrita, pode produzir efeitos; use ambiente e transação de teste adequados."
+    },
+    {
+      "id": "card-056",
+      "category": "SQL",
+      "q": "Qual benefício de keyset pagination?",
+      "a": "Retoma de uma chave ordenada sem descartar grande prefixo como OFFSET; ainda exige ordem total e contrato para mudanças concorrentes."
+    },
+    {
+      "id": "card-057",
+      "category": "Distribuídos",
+      "q": "Timeout prova que operação falhou?",
+      "a": "Não. Ela pode ter sido confirmada e a resposta se perdido. Trate estado desconhecido e consulta por operationId."
+    },
+    {
+      "id": "card-058",
+      "category": "Distribuídos",
+      "q": "O que guardar com chave idempotente?",
+      "a": "Escopo, payload/fingerprint canônico, estado, resultado e retenção; chave igual com payload diferente deve conflitar."
+    },
+    {
+      "id": "card-059",
+      "category": "Distribuídos",
+      "q": "Uma compensação apaga o passado?",
+      "a": "Não. Pode criar uma nova operação corretiva; efeitos externos irreversíveis exigem tratamento explícito."
+    },
+    {
+      "id": "card-060",
+      "category": "Distribuídos",
+      "q": "Cache de saldo pode autorizar débito?",
+      "a": "Só se a arquitetura preservar o invariante exigido. Um cache desatualizado comum não é autoridade segura para essa decisão."
+    },
+    {
+      "id": "card-061",
+      "category": "Distribuídos",
+      "q": "O que perguntar antes de dizer eventual consistency?",
+      "a": "Qual atraso é aceitável, para qual operação, o que o usuário verá e como conflitos/invariantes serão tratados."
+    },
+    {
+      "id": "card-062",
+      "category": "Distribuídos",
+      "q": "O que outbox resolve?",
+      "a": "Gravar mudança local e intenção de evento na mesma transação. Não elimina automaticamente duplicação na publicação."
+    },
+    {
+      "id": "card-063",
+      "category": "Kafka",
+      "q": "A ordem do Kafka é global?",
+      "a": "A garantia relevante é por partição; não presuma ordem global entre partições ou ordem causal apenas por timestamp."
+    },
+    {
+      "id": "card-064",
+      "category": "Kafka",
+      "q": "Commit de offset depois do efeito evita duplicatas?",
+      "a": "Não. Crash entre efeito e commit permite reentrega; o consumidor precisa proteger repetição."
+    },
+    {
+      "id": "card-065",
+      "category": "Kafka",
+      "q": "Qual perigo de replay?",
+      "a": "Repetir efeitos externos, duplicar contagens ou aplicar schema antigo incorretamente. Separe projeções e efeitos."
+    },
+    {
+      "id": "card-066",
+      "category": "Kafka",
+      "q": "O que precisa existir junto de uma DLQ?",
+      "a": "Dono, alerta, classificação do erro, dados seguros para diagnóstico e processo de reprocessamento."
+    },
+    {
+      "id": "card-067",
+      "category": "Arquitetura",
+      "q": "Qual diferença entre Strategy e Adapter?",
+      "a": "Strategy troca política/algoritmo; Adapter traduz uma interface para outra."
+    },
+    {
+      "id": "card-068",
+      "category": "Arquitetura",
+      "q": "Bounded context é serviço obrigatoriamente?",
+      "a": "Não. Delimita modelo e vocabulário; pode existir como módulo dentro de um deploy compartilhado."
+    },
+    {
+      "id": "card-069",
+      "category": "Arquitetura",
+      "q": "Event sourcing e emitir evento são sinônimos?",
+      "a": "Não. Event sourcing usa histórico de eventos como fonte de verdade do estado; emitir mensagens não implica isso."
+    },
+    {
+      "id": "card-070",
+      "category": "Arquitetura",
+      "q": "O que uma boa ADR registra?",
+      "a": "Contexto, opções, decisão, consequências e condições para reavaliar."
+    },
+    {
+      "id": "card-071",
+      "category": "SRE",
+      "q": "SLI, SLO e SLA?",
+      "a": "Medida, objetivo numa janela e compromisso formal, respectivamente. Defina evento bom e denominador."
+    },
+    {
+      "id": "card-072",
+      "category": "SRE",
+      "q": "99,9% em um milhão de requests permite quantos ruins?",
+      "a": "Mil, segundo aquele denominador e janela. Não converta automaticamente para minutos de downtime."
+    },
+    {
+      "id": "card-073",
+      "category": "Segurança",
+      "q": "Token válido basta para ler /accounts/{id}?",
+      "a": "Não. Verifique autorização sobre aquele recurso e ação, incluindo tenant/ownership."
+    },
+    {
+      "id": "card-074",
+      "category": "Segurança",
+      "q": "Onde dados sensíveis costumam vazar além do banco?",
+      "a": "Logs, traces, métricas com labels, exportações, backups e ferramentas de suporte."
+    },
+    {
+      "id": "card-075",
+      "category": "Frontend",
+      "q": "O que um modal acessível precisa fazer com foco?",
+      "a": "Mover foco para dentro ao abrir, manter navegação apropriada enquanto modal e devolver foco de modo previsível ao fechar."
+    },
+    {
+      "id": "card-076",
+      "category": "Mobile",
+      "q": "O que um timeout após enviar pagamento deve mostrar?",
+      "a": "Estado pendente/desconhecido com consulta de status; não orientar repetição com nova identidade como se nada tivesse ocorrido."
+    },
+    {
+      "id": "card-077",
+      "category": "Dados/ML",
+      "q": "Por que split temporal importa em certos modelos?",
+      "a": "Evita avaliar com informação do futuro e aproxima o cenário de treino passado versus decisão futura; ainda exige cuidar de leakage."
+    },
+    {
+      "id": "card-078",
+      "category": "Staff",
+      "q": "Como demonstrar influência sem autoridade?",
+      "a": "Relate objetivo, divergência, critérios, evidências, alinhamento, decisão, resultado e sua contribuição específica."
+    },
+    {
+      "id": "card-079",
+      "category": "Inglês",
+      "q": "Como ganhar clareza sem fingir que sabe?",
+      "a": "\"Let me restate the requirement.\" / \"I am not sure about that API; I would verify it. The behavior we need is...\""
+    },
+    {
+      "id": "card-080",
+      "category": "Recuperação",
+      "q": "Qual sequência usar quando der branco?",
+      "a": "Contrato → exemplo mínimo → assinatura → estado → loop/transição → erros → testes. Faça o próximo passo verificável."
+    }
+  ],
+  "plan": [
+    {
+      "week": 1,
+      "title": "Diagnóstico e fundamentos",
+      "focus": "Escolha linguagem principal; contratos, estruturas, testes e baseline de comunicação.",
+      "deliverables": [
+        "Resolver 3 problemas sem consultar resposta",
+        "Escrever 1 página de forças/lacunas",
+        "Criar 10 cartões sobre erros reais"
+      ],
+      "gate": "Explicar contrato, complexidade e 3 fronteiras em dois problemas novos; se não conseguir, repetir base antes de avançar."
+    },
+    {
+      "week": 2,
+      "title": "Algoritmos reconstruíveis",
+      "focus": "Mapas, filas, janelas, busca binária, heaps e grafos.",
+      "deliverables": [
+        "Implementar 6 padrões do zero",
+        "Rodar labs Python de janela e DAG",
+        "Fazer 2 mocks de 40 minutos"
+      ],
+      "gate": "Resolver um problema não visto justificando estrutura e invariante; sem decorar sequência específica de código."
+    },
+    {
+      "week": 3,
+      "title": "Domínio e qualidade de código",
+      "focus": "Tipos, dinheiro, erros, testes, núcleo funcional e patterns úteis.",
+      "deliverables": [
+        "Rodar ledger e rateio",
+        "Reimplementar uma regra em linguagem secundária",
+        "Refatorar com teste de comportamento preservado"
+      ],
+      "gate": "Distinguir erro de domínio de infraestrutura e provar conservação/repetição em um caso financeiro."
+    },
+    {
+      "week": 4,
+      "title": "Persistência e concorrência",
+      "focus": "SQL, joins, índices, isolamento, locks e idempotência.",
+      "deliverables": [
+        "Executar 3 labs SQL em banco de treino",
+        "Ler um EXPLAIN com dados representativos",
+        "Desenhar 3 interleavings de corrida"
+      ],
+      "gate": "Explicar lost update, deadlock, retry e um plano de índice sem depender de slogans."
+    },
+    {
+      "week": 5,
+      "title": "Distribuídos e mensageria",
+      "focus": "Timeout, replicação, eventos, inbox/outbox, replay e consistência.",
+      "deliverables": [
+        "Mapear 6 pontos de crash",
+        "Projetar consumidor idempotente",
+        "Fazer mock de pipeline de eventos"
+      ],
+      "gate": "Demonstrar por que uma garantia de broker não resolve sozinha um efeito externo."
+    },
+    {
+      "week": 6,
+      "title": "System design end-to-end",
+      "focus": "Requisitos, estimativas, API, dados, fluxos de falha e escala.",
+      "deliverables": [
+        "Dois designs de 60 minutos",
+        "Uma estimativa de capacidade com unidades",
+        "Uma comparação entre duas arquiteturas"
+      ],
+      "gate": "Entregar desenho com caminho crítico, invariante, gargalo, operação e migração; justificar decisões."
+    },
+    {
+      "week": 7,
+      "title": "SRE e segurança",
+      "focus": "SLIs, SLOs, incidentes, observabilidade, autorização e abuso.",
+      "deliverables": [
+        "Conduzir tabletop de incidente",
+        "Escrever threat model de uma página",
+        "Definir SLO com denominador"
+      ],
+      "gate": "Mitigar um incidente hipotético com sinais e hipótese, e identificar autorização por objeto num fluxo."
+    },
+    {
+      "week": 8,
+      "title": "Especialização da vaga",
+      "focus": "Escolha 1 eixo principal: backend/distribuídos, frontend, mobile, dados/ML ou plataforma. Reserve 70% deste bloco ao foco, 30% a interfaces.",
+      "deliverables": [
+        "Confirmar escopo com descrição/recrutador",
+        "Dois casos profundos da especialidade",
+        "Uma revisão de trade-offs com outra especialidade"
+      ],
+      "gate": "Explicar decisões específicas do domínio escolhido e reconhecer limites fora da sua atuação."
+    },
+    {
+      "week": 9,
+      "title": "Influência e direção técnica",
+      "focus": "RFCs, conflito, migração, métricas, mentoria e histórias reais.",
+      "deliverables": [
+        "Preparar 6 histórias factuais",
+        "Escrever uma ADR e um plano de rollout",
+        "Treinar perguntas de follow-up difíceis"
+      ],
+      "gate": "Sustentar sua contribuição, alternativas, resultado e aprendizado sem inventar números ou esconder falhas."
+    },
+    {
+      "week": 10,
+      "title": "Integração e inglês",
+      "focus": "Simulações completas alternando coding, design, debugging e discussão Staff.",
+      "deliverables": [
+        "Fazer 4 processos simulados com pausas",
+        "Explicar um design em inglês",
+        "Atualizar cartões apenas de lacunas persistentes"
+      ],
+      "gate": "Manter raciocínio claro sob mudança de requisito e concluir com limites/testes em tempo."
+    },
+    {
+      "week": 11,
+      "title": "Correção dirigida",
+      "focus": "Treine a menor habilidade que explica cada erro recorrente.",
+      "deliverables": [
+        "Refazer 3 problemas com restrições diferentes",
+        "Completar casos ainda não vistos",
+        "Fazer ao menos um mock com outra pessoa"
+      ],
+      "gate": "Três avaliações consecutivas sem falha crítica de contrato/invariante; use rubrica, não sensação de familiaridade."
+    },
+    {
+      "week": 12,
+      "title": "Consolidação e rotina final",
+      "focus": "Revisão espaçada, logística, linguagem principal e casos representativos.",
+      "deliverables": [
+        "Dois mocks finais espaçados",
+        "Revisar folha pessoal de erros",
+        "Preparar ambiente e perguntas ao entrevistador"
+      ],
+      "gate": "Conseguir reconstruir esqueletos, explicar trade-offs e retomar após um branco. Reduza carga perto da entrevista e preserve descanso."
+    }
+  ],
+  "playbooks": [
+    {
+      "id": "start",
+      "title": "Como usar sem virar leitura infinita",
+      "steps": [
+        "Confirme data, etapas, especialidade e linguagem permitida com o recrutador; relatos públicos são pistas, não contrato.",
+        "Faça um diagnóstico: 40 min coding, 60 min design, 20 min história de impacto. Registre dificuldades observadas.",
+        "Escolha uma linguagem principal. Use outras para leitura e contexto; não tente memorizar todos os frameworks.",
+        "Em uma sessão de 90 min: 10 min recuperação, 40 min implementação, 25 min caso/explicação, 15 min revisão dos erros.",
+        "Marque concluído somente após recuperar sem olhar e aplicar em variante nova. O portal é apoio; escrever e falar são o treino.",
+        "Use as simulações como amostra ampla de habilidades; nenhuma coleção cobre todas as entrevistas possíveis."
+      ],
+      "example": "Se você lê sobre idempotência, feche a página, implemente um dedupe simples, introduza payload conflitante e explique o limite entre memória e transação."
+    },
+    {
+      "id": "syntax",
+      "title": "Esqueci a sintaxe: protocolo de reconstrução",
+      "steps": [
+        "Contrato: diga entrada, saída e regra que não pode quebrar.",
+        "Exemplo: use dois ou três valores e execute à mão.",
+        "Assinatura: escreva nome, argumentos e retorno na linguagem principal.",
+        "Estado: crie só as variáveis e estruturas necessárias; nomeie o significado de cada uma.",
+        "Loop/transição: escreva uma passagem correta antes de otimizar.",
+        "Erros: trate vazio, inválido, repetição e falha relevante.",
+        "Teste: execute exemplo, borda e contraexemplo. Se o import/API exato faltar, diga o comportamento e confirme a documentação se o formato permitir."
+      ],
+      "example": "Para BFS: entrada grafo/origem → exemplo A→B → função → deque e visited → while/popleft/vizinhos → origem ausente → teste ciclo. Aprenda o bloco pela função, não pelo desenho das letras."
+    },
+    {
+      "id": "frameworks",
+      "title": "Frameworks: saber o que lembrar e o que consultar",
+      "steps": [
+        "Memorize conceitos estáveis: request/response, middleware, validação, injeção, transação, cancelamento e teste.",
+        "Escolha um framework da sua prática e fixe a versão usada no treino.",
+        "Implemente do zero um endpoint pequeno com validação, erro de domínio, persistência simulada e teste.",
+        "Mantenha uma folha curta com imports e comandos dessa versão; confira na documentação oficial.",
+        "Repita sem olhar depois; consulte apenas o trecho esquecido e tente novamente.",
+        "Não invente nome de método em entrevista. Declare a intenção e pergunte se pseudocódigo/consulta é permitido naquele formato."
+      ],
+      "example": "Saber onde a transação começa e termina é mais transferível que decorar todas as anotações de todos os frameworks."
+    },
+    {
+      "id": "blank",
+      "title": "Retomar quando bater nervosismo",
+      "steps": [
+        "Faça uma pausa breve e confortável; retome sua atenção ao enunciado.",
+        "Diga uma frase concreta: \"Vou conferir um exemplo menor para validar minha hipótese.\"",
+        "Reescreva o invariante e o estado atual.",
+        "Separe conhecimento que você tem de uma dúvida específica.",
+        "Escolha uma operação simples que avance; se necessário, apresente primeiro a solução básica correta.",
+        "No pós-treino, identifique se a dificuldade foi sintaxe, conceito, tempo ou comunicação e treine só essa peça."
+      ],
+      "example": "Não é necessário prometer que nunca dará branco. O objetivo é ter um caminho de retorno praticado."
+    },
+    {
+      "id": "design60",
+      "title": "Roteiro autoral para 60 minutos de system design",
+      "steps": [
+        "0–7 min: atores, requisitos, exclusões, invariantes e SLOs.",
+        "7–12 min: escala e estimativas com unidades e hipóteses.",
+        "12–22 min: API, dados e caminho principal.",
+        "22–38 min: aprofunde o maior risco: consistência, contenção, fila ou armazenamento.",
+        "38–48 min: falhas parciais, segurança, observabilidade e recuperação.",
+        "48–56 min: rollout, migração, custo e ownership.",
+        "56–60 min: recapitule decisões, alternativas e limitações; ajuste ao direcionamento do entrevistador."
+      ],
+      "example": "Distribuição de tempo é heurística de treino, não dinâmica confirmada do Nubank."
+    },
+    {
+      "id": "coding45",
+      "title": "Roteiro autoral para 45 minutos de live coding",
+      "steps": [
+        "0–5 min: confirme contrato e exemplos, inclusive vazio e erro.",
+        "5–10 min: proponha algoritmo e diga invariante e custo.",
+        "10–30 min: implemente versão coerente e faça checkpoints curtos.",
+        "30–39 min: rode testes de fronteira e corrija a causa de cada erro.",
+        "39–43 min: discuta alternativa, custo e limite.",
+        "43–45 min: diga o que ficou incompleto com precisão e deixe um próximo passo."
+      ],
+      "example": "Se o tempo acabar, código incompleto honesto com contrato claro é mais útil que afirmar correção não verificada."
+    },
+    {
+      "id": "fourteen",
+      "title": "Plano comprimido: 14 dias",
+      "steps": [
+        "Dias 1–2: diagnóstico, linguagem principal e contratos; não começar seis linguagens ao mesmo tempo.",
+        "Dias 3–4: mapas, filas, busca, grafos e testes; dois labs reescritos sem olhar.",
+        "Dias 5–6: SQL, transações, idempotência e dinheiro.",
+        "Dias 7–8: design de sistema e falhas distribuídas.",
+        "Dias 9–10: especialidade da vaga, segurança e incidente.",
+        "Dias 11–12: histórias Staff e dois mocks integrados com feedback.",
+        "Dia 13: corrigir as duas lacunas mais graves; dia 14: revisão leve e logística."
+      ],
+      "example": "É um plano de priorização; não transforma ausência de experiência em senioridade Staff em duas semanas."
+    },
+    {
+      "id": "seventytwo",
+      "title": "Plano de emergência: 72 horas",
+      "steps": [
+        "Primeiro bloco: confirme formato e restrições; revise diagnóstico e selecione três fraquezas prioritárias.",
+        "Dia 1: linguagem principal, um problema de dados e um de concorrência/idempotência; executar testes.",
+        "Dia 2: um system design completo, um incidente e três histórias de impacto com follow-ups.",
+        "Dia 3: um mock leve, revisão dos esqueletos, perguntas e ambiente. Pare de adicionar temas novos no último bloco.",
+        "Distribua pausas e sono; evite compensar lacunas com uma maratona sem recuperação.",
+        "Leve apenas material permitido no formato da entrevista; pratique para responder sem consultar o portal."
+      ],
+      "example": "Priorize o que muda desempenho agora: contrato, invariantes, sintaxe principal e comunicação de decisões."
+    },
+    {
+      "id": "review",
+      "title": "Revisão espaçada e caderno de erros",
+      "steps": [
+        "Registre a pergunta, sua resposta, o erro e uma regra curta de correção.",
+        "Tente recuperar antes de revelar; marque difícil se reconheceu somente depois de ler.",
+        "Comece com revisões em 1, 3, 7, 14 e 30 dias e ajuste por dificuldade. É heurística, não protocolo universal.",
+        "Intercale temas depois de aprender a base: um algoritmo, um cenário distribuído e uma história.",
+        "A cada semana, faça uma variante inédita para testar transferência, não apenas repetição.",
+        "Arquive cartões muito fáceis e divida cartões grandes em perguntas concretas."
+      ],
+      "example": "Erro: \"esqueci import deque\". Correção: escrever de memória três linhas de BFS em dias diferentes, depois usar em um grafo novo."
+    },
+    {
+      "id": "staffstory",
+      "title": "Banco de histórias reais Staff",
+      "steps": [
+        "Prepare seis histórias: decisão difícil, incidente, conflito, migração, desenvolvimento de pessoas e falha/aprendizado.",
+        "Para cada uma, escreva contexto, escala, sua responsabilidade e restrições.",
+        "Compare alternativas e explique como obteve alinhamento.",
+        "Descreva resultado com evidência disponível, sem inventar métrica.",
+        "Treine follow-ups: o que você faria diferente, quem discordou, qual sua contribuição, o que ocorreu após sua saída.",
+        "Pratique versão de dois minutos e aprofundamento de dez minutos."
+      ],
+      "example": "Não decore um discurso inteiro; memorize âncoras factuais e a lógica da decisão."
+    }
+  ],
+  "scope": "Conteúdo autoral de preparação técnica e Staff. Não são perguntas vazadas, rubrica oficial nem promessa de aprovação do Nubank. Fontes primárias verificam conceitos e APIs; módulos sem sourceUrls são exercícios e orientações autorais.",
+  "updatedAt": "2026-10-26"
+}
