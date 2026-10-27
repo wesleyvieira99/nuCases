@@ -10,7 +10,8 @@ Portal de estudo em português para entrevistas de Staff Software Engineer, com 
 - 60 simulações autorais, com 240 rodadas e aproximadamente 120 horas de prática sugerida.
 - 14 laboratórios de código, com testes e explicações.
 - Dojo de sintaxe com 36 exercícios, 108 lacunas e 12 receitas de código.
-- 200 flashcards, revisão espaçada, cronômetro, rubricas e rascunhos.
+- 256 flashcards, revisão espaçada, cronômetro, rubricas e rascunhos.
+- **Java de cabeça:** 56 cartões de sintaxe, classes, métodos e imports, com rascunho, referência oculta, autoavaliação e exemplos completos para Java 17.
 - 32 fontes públicas, com pesquisa consolidada em **26/10/2026** e distinção entre fontes oficiais e relatos de candidatos.
 
 ## Como usar
@@ -29,8 +30,8 @@ O progresso e os rascunhos ficam no armazenamento local do navegador. Use a expo
 
 ```text
 index.html                      # Portal completo, com conteúdo incorporado
-src/{shell.html,style.css,app.js} # Interface e comportamento
-data/                           # curriculum, research, simulations e syntax.json
+src/{shell.html,style.css,app.js,java.js} # Interface e comportamento
+data/                           # curriculum, research, simulations, syntax e java.json
 scripts/build.py                # Gera o index.html
 downloads/codigos-e-receitas.zip  # Códigos e receitas para prática
 .nojekyll                       # Publicação estática no GitHub Pages
@@ -49,3 +50,5 @@ O HTML final funciona sem servidor de aplicação. A hospedagem pública disponi
 Este é um material independente, **não oficial e sem vínculo com o Nubank**. Os casos são autorais, inspirados em competências e informações públicas; não representam um banco de perguntas reais nem cobrem todos os processos possíveis. Etapas e requisitos podem variar por vaga e mudar com o tempo. O material não garante aprovação.
 
 Na preparação desta versão, 12 dos 14 laboratórios foram executados; os dois de Clojure passaram por revisão manual estática. A validação do dojo incluiu 23 exemplos. Esses resultados descrevem o que foi verificado e não garantem a execução de todos os exemplos em qualquer ambiente ou versão de linguagem/framework.
+
+A seção [Java de cabeça](https://wesleyvieira99.github.io/nuCases/#java) também inclui um mapa de imports e um ritual de recuperação de memória. Todos os 56 programas Java foram compilados e executados com Java 17 e assertions habilitadas. Cada cartão permite baixar seu próprio `Main.java`; rode-os em pastas separadas. O editor no portal salva rascunhos, mas não executa nem corrige código automaticamente.

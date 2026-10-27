@@ -1,0 +1,61 @@
+'use strict';
+// Java recall practice. Shares drafts, backup and review scheduling with the portal.
+let javaTab='cards',javaQuery='',javaCategory='all',javaStatus='all',javaRevealed=false;
+const javaKey=id=>'java-'+id;
+const javaDue=c=>(state.cards[javaKey(c.id)]?.due||0)<=Date.now();
+function javaCardList(){return J.cards.filter(c=>(javaCategory==='all'||c.category===javaCategory)&&(javaStatus==='all'||(javaStatus==='due'&&javaDue(c))||(javaStatus==='new'&&!state.cards[javaKey(c.id)]))&&fold(JSON.stringify(c)).includes(fold(javaQuery.trim())))}
+function javaView(){
+ javaRevealed=false;
+ const card=J.cards.find(c=>c.id===routeId);
+ if(card)return javaPracticeView(card);
+ const reviewed=J.cards.filter(c=>state.cards[javaKey(c.id)]).length;
+ return `${pageHead('JAVA • RECUPERAÇÃO ATIVA','Java de cabeça.','Sintaxe, classes, métodos e imports para reconstruir sem consulta. Base Java 17, com exemplos completos e testes por assert. Não representa a versão exigida por uma vaga.')}<section class="java-hero"><div><span class="eyebrow">UM BLOCO POR VEZ</span><h2>Veja a pergunta.<br>Escreva. Compare. Repita.</h2><p>Troque a releitura por uma tentativa curta: explique o contrato, digite o código e só depois abra a referência.</p><div class="button-row"><a class="btn white" href="#java/${esc((J.cards.find(javaDue)||J.cards[0]).id)}">Treinar um cartão →</a><button class="btn ghost" data-java-tab="method">Meu ritual de 20 min</button></div></div><div class="java-stats"><strong>${J.cards.length}</strong><span>cartões com código executável</span><small>${reviewed} já revisados • ${J.cards.filter(javaDue).length} disponíveis hoje</small></div></section><div class="tabs java-tabs">${[['cards','Cartões para decorar'],['imports','Mapa de imports'],['method','Método de treino']].map(([id,label])=>`<button class="tab ${javaTab===id?'active':''}" data-java-tab="${id}" aria-pressed="${javaTab===id}">${label}</button>`).join('')}</div>${javaTab==='method'?javaMethodView():javaTab==='imports'?javaImportsView():`<div class="filters"><input id="java-search" aria-label="Buscar Java" placeholder="Buscar método, classe ou sintaxe: HashMap, equals, stream…" value="${esc(javaQuery)}"><select id="java-category" aria-label="Categoria Java"><option value="all">Todos os assuntos</option>${[...new Set(J.cards.map(c=>c.category))].map(c=>`<option ${javaCategory===c?'selected':''}>${esc(c)}</option>`).join('')}</select><select id="java-status" aria-label="Revisão Java">${[['all','Todos os cartões'],['due','Disponíveis hoje'],['new','Ainda não revisados']].map(([id,label])=>`<option value="${id}" ${javaStatus===id?'selected':''}>${label}</option>`).join('')}</select></div><p id="java-result-count" class="result-total" aria-live="polite"></p><div id="java-grid" class="grid-3"></div>`}`;
+}
+function updateJavaGrid(){
+ if(!$('#java-grid'))return;
+ const list=javaCardList();
+ $('#java-result-count').textContent=`${list.length} de ${J.cards.length} cartões • escolha um para escrever de memória`;
+ $('#java-grid').innerHTML=list.length?list.map(c=>`<article class="card java-card"><div class="button-row"><span class="pill">${esc(c.category)}</span><span class="pill gray">${esc(c.level)}</span></div><h3>${esc(c.title)}</h3><p>${esc(c.question)}</p><div class="card-foot"><span>${!state.cards[javaKey(c.id)]?'Primeira tentativa':javaDue(c)?'Revisão disponível':'Revisão agendada'}</span><a class="btn small" href="#java/${esc(c.id)}">Treinar →</a></div></article>`).join(''):'<div class="empty">Nenhum cartão nesta seleção. Mude o termo ou os filtros.</div>';
+}
+function javaPracticeView(c){
+ const index=J.cards.indexOf(c),next=J.cards[(index+1)%J.cards.length],previous=J.cards[(index+J.cards.length-1)%J.cards.length];
+ return `${pageHead(`JAVA 17 • ${esc(c.category)}`,esc(c.title),`Cartão ${index+1} de ${J.cards.length} • ${esc(c.level)}`,'<a class="btn small" href="#java">← Todos os cartões</a>')}<div class="java-practice"><article class="card reading"><span class="eyebrow">01 / RECUPERE SEM CONSULTAR</span><h2>${esc(c.question)}</h2><p>Escreva os imports, a assinatura e um exemplo. Se travar, descreva o comportamento em palavras e continue pelo próximo passo.</p><label class="java-editor-label" for="java-draft">Seu código de memória</label><textarea id="java-draft" class="code-editor" spellcheck="false" aria-describedby="java-editor-note" data-editor="${javaKey(c.id)}" placeholder="// Imports → classe → main ou método → regra → assert">${esc(state.editors[javaKey(c.id)]||'')}</textarea><p id="java-editor-note" class="tiny">Salvo neste navegador e incluído no backup. Este editor não compila nem avalia o código.</p><button class="btn primary" data-java-reveal="${esc(c.id)}" aria-expanded="false" aria-controls="java-reference">Revelar referência e comparar</button><section id="java-reference" hidden><div class="section-head section-space"><div><span class="eyebrow">02 / COMPARE E CORRIJA</span><h3>Referência completa</h3></div><button class="btn small" data-java-download="${esc(c.id)}">Baixar Main.java</button></div>${para(c.answer)}<h3>Imports que você precisa lembrar</h3><pre><code>${esc(c.imports.length?c.imports.join('\n'):'// Nenhum import explícito neste exemplo.\n// Tipos de java.lang são disponibilizados automaticamente.')}</code></pre><pre><code>${esc(c.code)}</code></pre><div class="callout"><strong>Gancho de memória:</strong> ${esc(c.memory)}</div><h3>Armadilha</h3>${para(c.pitfall)}<h3>Compile e verifique</h3><pre><code>javac --release 17 Main.java
+java -ea Main</code></pre><p class="tiny">${esc(c.validation)}. Execute cada Main.java em uma pasta separada. O parâmetro -ea habilita os asserts de verificação; uma execução sem saída e sem erro pode significar sucesso.</p><p class="tiny break-word">${link(c.sourceUrl,'Documentação oficial deste assunto')}</p></section><section class="section-space"><span class="eyebrow">03 / AVALIE SUA RECUPERAÇÃO</span><p>Depois de revelar, compare sintaxe, resultado e explicação. A avaliação é sua; não há correção automática.</p><div class="review-actions java-rating">${[[0,'Deu branco','10 min'],[1,'Com consulta','1 dia'],[2,'Lembrei sozinho','3 dias'],[3,'Expliquei e variei','7+ dias']].map(([n,label,time])=>`<button disabled data-java-rate="${n}" data-java-id="${esc(c.id)}">${label}<small>Rever em ${time}</small></button>`).join('')}</div><p id="java-rating-status" class="tiny" role="status">${javaReviewStatus(c)}</p></section><div class="button-row section-space"><a class="btn" href="#java/${esc(previous.id)}">← Anterior</a><a class="btn primary" href="#java/${esc(next.id)}">Próximo cartão →</a></div></article><aside class="card java-side reading"><span class="eyebrow">SE DER BRANCO</span><h3>Recupere a estrutura.</h3>${ol(['Diga a entrada e a saída esperada.','Escolha o tipo ou a coleção.','Escreva a assinatura antes do corpo.','Faça um caso pequeno com assert.','Confira um detalhe por vez na documentação permitida.'])}<div class="callout"><strong>Fale durante o pair:</strong><br>“Sei o contrato que preciso; vou escrever o fluxo e conferir esse método.”</div><a href="#java">Explorar outros assuntos →</a><p class="tiny">Os mesmos cartões também aparecem em Memória & revisão, nas categorias Java.</p></aside></div>`;
+}
+function javaReviewStatus(c){const r=state.cards[javaKey(c.id)];return r?`Revisado ${r.reps} vez(es). Próxima revisão: ${new Date(r.due).toLocaleString('pt-BR')}.`:'Revele a referência para registrar sua primeira tentativa.'}
+function rateJavaCard(id,n){
+ const c=J.cards.find(c=>c.id===id);if(!c||!javaRevealed||!Number.isInteger(n)||n<0||n>3)return;
+ const key=javaKey(id),old=state.cards[key]||{interval:0,reps:0};
+ const days=n===0?10/1440:n===1?1:n===2?3:Math.min(60,Math.max(7,(old.interval||3)*2));
+ state.cards[key]={due:Date.now()+days*86400000,interval:days,reps:old.reps+1,lastRating:n};save();refreshChrome();
+ $('#java-rating-status').textContent=javaReviewStatus(c);$$('[data-java-rate]').forEach(b=>b.disabled=true);javaRevealed=false;toast('Tentativa registrada na sua revisão espaçada.');
+}
+function javaImportsView(){
+ const groups=[...new Set(J.cards.map(c=>c.category))];
+ return `<div class="notice"><strong>Treine o pacote junto com o tipo.</strong> java.lang é automático; java.util, java.math, java.time e subpacotes precisam de imports. Um import de java.util.* não inclui java.util.stream ou java.util.concurrent.</div><div class="grid-equal java-reference-grid section-space">${groups.map(category=>{const cards=J.cards.filter(c=>c.category===category),imports=[...new Set(cards.flatMap(c=>c.imports))].sort();return `<article class="card reading"><h3 style="margin-top:0">${esc(category)}</h3><pre><code>${esc(imports.join('\n')||'// Exemplos deste grupo sem imports explícitos.')}</code></pre><div class="java-api-links">${cards.map(c=>`<a href="#java/${esc(c.id)}">${esc(c.title)} →</a>`).join('')}</div></article>`}).join('')}</div>`;
+}
+function javaMethodView(){return `<div class="grid-equal java-reference-grid"><article class="card reading"><span class="eyebrow">20 MINUTOS • RITMO SUGERIDO</span><h2>Do cartão ao arquivo vazio.</h2>${ol(['2 min — escolha três cartões de um assunto e leia só as perguntas.','8 min — escreva sem consulta: imports, classe, assinatura, implementação e um assert.','5 min — revele a referência, compile seu código e registre o erro exato.','3 min — feche a referência e reescreva o trecho em que errou.','2 min — avalie a recuperação e mude uma entrada para explicar o comportamento.'])}<div class="callout">O objetivo é recuperar e adaptar a estrutura. A pontuação registra sua autoavaliação, não certifica domínio nem aprovação.</div><h3>Intervalos de revisão</h3>${ul(['Deu branco: retornar em 10 minutos.','Precisou consultar: retornar em 1 dia.','Recuperou sozinho: retornar em 3 dias.','Explicou e variou: começar em 7 dias; crescer até 60 conforme as avaliações.'])}<p>Use os horários como organização do estudo. Diminua o intervalo se perceber uma lacuna.</p></article><article class="card reading"><span class="eyebrow">ORDEM PARA RECONSTRUIR</span><h2>Import → tipo → método → teste.</h2><pre><code>import java.util.HashMap;
+import java.util.Map;
+
+public class Main {
+    static Map&lt;Character, Integer&gt; count(String word) {
+        Map&lt;Character, Integer&gt; counts = new HashMap&lt;&gt;();
+        for (char c : word.toCharArray()) {
+            counts.merge(c, 1, Integer::sum);
+        }
+        return counts;
+    }
+
+    public static void main(String[] args) {
+        assert count("java").get('a') == 2;
+    }
+}</code></pre><p>Explique por que get devolve Integer e por que a comparação com 2 faz unboxing neste exemplo. Acrescente um teste com string vazia.</p><h3>Três confusões para repetir</h3>${ul(['Array: length. String: length(). Coleção: size().','Comparar conteúdo: equals. Comparar primitivos: ==. BigDecimal: compareTo para valor numérico.','List: add/get. Map: put/get/merge. Deque: offer/poll para fila, push/pop para pilha.'])}<h3>Leve para o nível Staff</h3><p>Depois de lembrar a chamada, explique mutabilidade, custo, valores nulos, tratamento de erro e concorrência. Uma API thread-safe não torna uma sequência inteira de operações atômica.</p></article></div>`;}
+document.addEventListener('click',e=>{
+ const t=e.target.closest('button');if(!t)return;
+ if(t.dataset.javaTab){javaTab=t.dataset.javaTab;render()}
+ if(t.dataset.javaReveal){const ref=$('#java-reference');ref.hidden=!ref.hidden;javaRevealed=!ref.hidden;t.setAttribute('aria-expanded',String(javaRevealed));t.textContent=javaRevealed?'Ocultar referência e tentar de novo':'Revelar referência e comparar';$$('[data-java-rate]').forEach(b=>b.disabled=!javaRevealed)}
+ if(t.dataset.javaRate!==undefined)rateJavaCard(t.dataset.javaId,Number(t.dataset.javaRate));
+ if(t.dataset.javaDownload){const c=J.cards.find(c=>c.id===t.dataset.javaDownload);if(c)download('Main.java',c.code,'text/x-java-source')}
+});
+document.addEventListener('input',e=>{if(e.target.id==='java-search'){javaQuery=e.target.value;updateJavaGrid()}});
+document.addEventListener('change',e=>{if(e.target.id==='java-category'){javaCategory=e.target.value;updateJavaGrid()}if(e.target.id==='java-status'){javaStatus=e.target.value;updateJavaGrid()}});

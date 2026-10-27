@@ -1,0 +1,886 @@
+{
+  "version": "Java 17",
+  "updatedAt": "2026-10-27",
+  "cards": [
+    {
+      "id": "jb-main-imports",
+      "title": "Main, imports e arquivo",
+      "category": "Sintaxe e fluxo",
+      "level": "Base",
+      "question": "Escreva um Main.java que obtenha a data 2026-10-27 e valide o ano. Onde fica o import?",
+      "answer": "Imports ficam antes da classe. Em Java 17, use public static void main(String[] args). java.lang é importado implicitamente.",
+      "imports": [
+        "import java.time.LocalDate;"
+      ],
+      "code": "import java.time.LocalDate;\npublic class Main {\n    public static void main(String[] args) {\n        LocalDate data = LocalDate.of(2026, 10, 27);\n        assert data.getYear() == 2026;\n    }\n}\n",
+      "pitfall": "O arquivo desta classe pública precisa se chamar Main.java; java Main usa o nome da classe, sem .class.",
+      "memory": "Reconstrua em ordem: import → classe → main → ação → assert.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-7.html#jls-7.3",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-primitivos-wrappers",
+      "title": "Primitivos e wrappers",
+      "category": "Strings e números",
+      "level": "Base",
+      "question": "Declare int, long, double, boolean, char e Integer; transforme o wrapper em int.",
+      "answer": "Primitivos guardam valores; wrappers são objetos. Autoboxing e unboxing fazem conversões entre os dois.",
+      "imports": [],
+      "code": "public class Main {\n    public static void main(String[] args) {\n        int quantidade = 3;\n        long total = 3_000_000_000L;\n        double media = 2.5;\n        boolean ativo = true;\n        char inicial = 'N';\n        Integer caixa = quantidade;\n        int valor = caixa;\n        assert valor == 3 && total > Integer.MAX_VALUE;\n        assert media == 2.5 && ativo && inicial == 'N';\n    }\n}\n",
+      "pitfall": "Desempacotar Integer null lança NullPointerException. Compare wrappers por valor com equals, sem depender do cache de objetos.",
+      "memory": "Minúsculo é primitivo: int; nome de classe é wrapper: Integer.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html#jls-5.1.7",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-cast-divisao",
+      "title": "Cast, divisão e perda de informação",
+      "category": "Strings e números",
+      "level": "Base",
+      "question": "Como obter 2.5 ao dividir 5 por 2? O que muda quando o cast vem depois da divisão?",
+      "answer": "A divisão de inteiros descarta a parte fracionária. Converta um operando antes de dividir; um cast posterior não recupera informação.",
+      "imports": [],
+      "code": "public class Main {\n    public static void main(String[] args) {\n        int a = 5, b = 2;\n        double correto = (double) a / b;\n        double tarde = (double) (a / b);\n        int truncado = (int) 2.9;\n        assert correto == 2.5;\n        assert tarde == 2.0 && truncado == 2;\n    }\n}\n",
+      "pitfall": "Conversões estreitas podem perder magnitude ou precisão. Não use cast como validação de faixa.",
+      "memory": "Para preservar a fração: converta antes da operação.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.17.2",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-var-local",
+      "title": "var continua tendo tipo",
+      "category": "Sintaxe e fluxo",
+      "level": "Base",
+      "question": "Declare três variáveis locais com var e explique por que var n = null não compila.",
+      "answer": "var infere o tipo pelo inicializador. Use em variáveis locais inicializadas, sem tornar o tipo dinâmico.",
+      "imports": [],
+      "code": "public class Main {\n    public static void main(String[] args) {\n        var nome = \"Nu\";\n        var quantidade = 2;\n        var valores = new int[]{3, 4};\n        quantidade += 1;\n        assert nome.length() == 2;\n        assert quantidade == 3 && valores[1] == 4;\n    }\n}\n",
+      "pitfall": "Não use var como tipo de campo, retorno de método ou parâmetro comum. null sozinho não fornece o tipo necessário.",
+      "memory": "var precisa ver o valor inicial para inferir o tipo.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-14.html#jls-14.4",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-if-curto-circuito",
+      "title": "if, ternário e curto-circuito",
+      "category": "Sintaxe e fluxo",
+      "level": "Base",
+      "question": "Verifique uma String possivelmente nula e devolva \"vazio\" ou \"preenchido\" sem NullPointerException.",
+      "answer": "&& só avalia a direita quando a esquerda é true; || só quando a esquerda é false. O ternário escolhe uma expressão.",
+      "imports": [],
+      "code": "public class Main {\n    static String classificar(String texto) {\n        if (texto == null || texto.isBlank()) {\n            return \"vazio\";\n        }\n        return texto.length() > 0 ? \"preenchido\" : \"vazio\";\n    }\n    public static void main(String[] args) {\n        assert classificar(null).equals(\"vazio\");\n        assert classificar(\" \").equals(\"vazio\");\n        assert classificar(\"java\").equals(\"preenchido\");\n    }\n}\n",
+      "pitfall": "Com boolean, & e | também avaliam a direita. Eles não substituem && e || em uma guarda contra null.",
+      "memory": "Primeiro proteja; depois acesse. Duplo operador permite curto-circuito.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.23",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-array-for-indice",
+      "title": "Array e for com índice",
+      "category": "Sintaxe e fluxo",
+      "level": "Base",
+      "question": "Some os valores de um int[] usando um for com índice e explique o limite.",
+      "answer": "Array usa length como campo. Os índices válidos começam em zero e terminam em length - 1.",
+      "imports": [],
+      "code": "public class Main {\n    public static void main(String[] args) {\n        int[] valores = {2, 4, 6};\n        int soma = 0;\n        for (int i = 0; i < valores.length; i++) {\n            soma += valores[i];\n        }\n        assert soma == 12;\n        assert new int[0].length == 0;\n    }\n}\n",
+      "pitfall": "i <= valores.length acessa uma posição inexistente. Array usa length; String usa length().",
+      "memory": "Zero, menor que tamanho, incrementa: 0 → < length → i++.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-10.html#jls-10.4",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-foreach",
+      "title": "for-each para percorrer valores",
+      "category": "Sintaxe e fluxo",
+      "level": "Base",
+      "question": "Conte números positivos em um array sem precisar do índice.",
+      "answer": "Use for (tipo item : origem) quando o trabalho depende de cada valor.",
+      "imports": [],
+      "code": "public class Main {\n    public static void main(String[] args) {\n        int[] valores = {-1, 0, 2, 8};\n        int positivos = 0;\n        for (int valor : valores) {\n            if (valor > 0) positivos++;\n        }\n        assert positivos == 2;\n    }\n}\n",
+      "pitfall": "Reatribuir a variável local valor não altera a posição do array. Para substituir elementos, use índice.",
+      "memory": "Leia os dois-pontos como \"em\": para cada valor em valores.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-14.html#jls-14.14.2",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-while-break-continue",
+      "title": "while, break e continue",
+      "category": "Sintaxe e fluxo",
+      "level": "Base",
+      "question": "Percorra de 1 a 10, pule pares e pare antes de somar valores acima de 5.",
+      "answer": "while repete enquanto a condição vale. continue pula para a próxima iteração; break encerra o laço.",
+      "imports": [],
+      "code": "public class Main {\n    public static void main(String[] args) {\n        int atual = 0, soma = 0;\n        while (atual < 10) {\n            atual++;\n            if (atual > 5) break;\n            if (atual % 2 == 0) continue;\n            soma += atual;\n        }\n        assert soma == 9;\n    }\n}\n",
+      "pitfall": "Se continue pular a atualização que faz o laço avançar, você pode criar um loop infinito.",
+      "memory": "continue = próxima volta; break = saída.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-14.html#jls-14.12",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-switch-expression",
+      "title": "switch que produz um valor",
+      "category": "Sintaxe e fluxo",
+      "level": "Intermediário",
+      "question": "Converta um código em texto usando switch expression com seta e um bloco com yield.",
+      "answer": "Uma switch expression precisa produzir um valor ou lançar em todo caminho. Em bloco, use yield.",
+      "imports": [],
+      "code": "public class Main {\n    static String rotulo(int codigo) {\n        return switch (codigo) {\n            case 200, 201 -> \"ok\";\n            case 429 -> {\n                String motivo = \"limite\";\n                yield motivo;\n            }\n            default -> \"outro\";\n        };\n    }\n    public static void main(String[] args) {\n        assert rotulo(201).equals(\"ok\");\n        assert rotulo(429).equals(\"limite\");\n        assert rotulo(500).equals(\"outro\");\n    }\n}\n",
+      "pitfall": "A expressão termina com ;. Com -> não existe a queda implícita para o próximo case.",
+      "memory": "Seta entrega; bloco entrega com yield.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.28",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-metodo-parametro-retorno",
+      "title": "Método: parâmetro e retorno",
+      "category": "Classes e contratos",
+      "level": "Base",
+      "question": "Escreva um método static que devolva o maior de dois inteiros e chame-o no main.",
+      "answer": "A declaração informa modificadores, tipo de retorno, nome, parâmetros e corpo. return devolve o resultado.",
+      "imports": [],
+      "code": "public class Main {\n    static int maior(int a, int b) {\n        return a >= b ? a : b;\n    }\n    public static void main(String[] args) {\n        int resultado = maior(7, 3);\n        assert resultado == 7;\n        assert maior(-2, -1) == -1;\n    }\n}\n",
+      "pitfall": "Java passa argumentos por valor. Reatribuir um parâmetro não reatribui a variável de quem chamou.",
+      "memory": "Retorno → nome → entradas → corpo.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-8.html#jls-8.4",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-sobrecarga-varargs",
+      "title": "Sobrecarga e varargs",
+      "category": "Classes e contratos",
+      "level": "Base",
+      "question": "Crie soma para dois int e para uma quantidade variável de long.",
+      "answer": "Sobrecargas diferem nos parâmetros. varargs usa tipo... e recebe um array dentro do método.",
+      "imports": [],
+      "code": "public class Main {\n    static int soma(int a, int b) { return a + b; }\n    static long soma(long... valores) {\n        long total = 0;\n        for (long valor : valores) total += valor;\n        return total;\n    }\n    public static void main(String[] args) {\n        assert soma(2, 3) == 5;\n        assert soma(2L, 3L, 4L) == 9L;\n        assert soma() == 0L;\n    }\n}\n",
+      "pitfall": "Só mudar o retorno não cria uma sobrecarga. O parâmetro varargs precisa ser o último.",
+      "memory": "Overload muda a entrada; os três pontos recebem muitos valores.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-8.html#jls-8.4.9",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-string-equals",
+      "title": "String: conteúdo versus identidade",
+      "category": "Strings e números",
+      "level": "Base",
+      "question": "Compare duas Strings com conteúdo igual, criadas como objetos diferentes, e trate null.",
+      "answer": "equals compara conteúdo de String; == compara referências. Objects.equals permite comparar referências nulas.",
+      "imports": [
+        "import java.util.Objects;"
+      ],
+      "code": "import java.util.Objects;\npublic class Main {\n    public static void main(String[] args) {\n        String a = new String(\"java\");\n        String b = new String(\"java\");\n        assert a != b;\n        assert a.equals(b);\n        assert Objects.equals(null, null);\n        assert !Objects.equals(null, \"java\");\n        assert \"java\".equals(a);\n    }\n}\n",
+      "pitfall": "Literais podem compartilhar referências e esconder um uso errado de ==. nulo.equals(...) falha.",
+      "memory": "Texto igual: equals. Possível null nos dois lados: Objects.equals.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html#equals(java.lang.Object)",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-string-inspecao",
+      "title": "String: índices e recortes",
+      "category": "Strings e números",
+      "level": "Base",
+      "question": "Recupere tamanho, primeiro char, posição de um trecho e substring de \"staff-java\".",
+      "answer": "length(), charAt(), indexOf() e substring(início, fim) operam por índices; o fim do recorte é exclusivo.",
+      "imports": [],
+      "code": "public class Main {\n    public static void main(String[] args) {\n        String texto = \"staff-java\";\n        assert texto.length() == 10;\n        assert texto.charAt(0) == 's';\n        assert texto.indexOf(\"java\") == 6;\n        assert texto.indexOf(\"kotlin\") == -1;\n        assert texto.substring(0, 5).equals(\"staff\");\n        assert texto.startsWith(\"staff\") && texto.contains(\"-\");\n    }\n}\n",
+      "pitfall": "Índices contam unidades UTF-16, não necessariamente caracteres percebidos. Emoji pode ocupar duas posições.",
+      "memory": "substring abre no início e fecha antes do fim: [início, fim).",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html#substring(int,int)",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-string-transformacao",
+      "title": "String: strip, split e replace",
+      "category": "Strings e números",
+      "level": "Base",
+      "question": "Remova espaços externos, divida \"a.b.\" preservando a parte vazia final e substitua um texto literal.",
+      "answer": "Strings são imutáveis: capture o resultado. split recebe regex; replace(CharSequence, CharSequence) faz substituição literal.",
+      "imports": [],
+      "code": "public class Main {\n    public static void main(String[] args) {\n        String original = \"  a.b.  \";\n        String limpo = original.strip();\n        String[] partes = limpo.split(\"\\\\.\", -1);\n        assert partes.length == 3 && partes[2].isEmpty();\n        assert limpo.replace(\".\", \"-\").equals(\"a-b-\");\n        assert original.startsWith(\"  \");\n        assert \"  \".isBlank();\n    }\n}\n",
+      "pitfall": "No fonte Java, split(\"\\\\.\") representa a regex de ponto literal. split sem limite descarta vazios finais.",
+      "memory": "strip limpa bordas; split separa; replace troca; guarde a nova String.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html#split(java.lang.String,int)",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-stringbuilder",
+      "title": "StringBuilder: montar texto",
+      "category": "Strings e números",
+      "level": "Base",
+      "question": "Monte \"id=42\" com append, insira um prefixo e transforme em String.",
+      "answer": "StringBuilder mantém um buffer mutável. append acrescenta no fim, insert usa uma posição e toString produz String.",
+      "imports": [],
+      "code": "public class Main {\n    public static void main(String[] args) {\n        StringBuilder buffer = new StringBuilder();\n        buffer.append(\"id=\").append(42);\n        buffer.insert(0, \"[\");\n        buffer.append(']');\n        assert buffer.toString().equals(\"[id=42]\");\n        assert buffer.length() == 7;\n    }\n}\n",
+      "pitfall": "StringBuilder não garante sincronização entre threads. Prefira instância local para construir um resultado.",
+      "memory": "Crie → append → toString.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/StringBuilder.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-parse-valueof",
+      "title": "parseInt, valueOf e toString",
+      "category": "Strings e números",
+      "level": "Base",
+      "question": "Converta \"42\" em int, em Integer e depois de volta para String.",
+      "answer": "Integer.parseInt devolve int; Integer.valueOf devolve Integer. Integer.toString formata um int em decimal.",
+      "imports": [],
+      "code": "public class Main {\n    public static void main(String[] args) {\n        int numero = Integer.parseInt(\"42\");\n        Integer objeto = Integer.valueOf(\"42\");\n        String texto = Integer.toString(numero);\n        assert numero == 42 && objeto.equals(42);\n        assert texto.equals(\"42\");\n        boolean rejeitou = false;\n        try { Integer.parseInt(\"quarenta\"); }\n        catch (NumberFormatException erro) { rejeitou = true; }\n        assert rejeitou;\n    }\n}\n",
+      "pitfall": "Texto inválido ou número fora da faixa causa NumberFormatException. Defina a política para espaços na entrada.",
+      "memory": "parseInt → primitivo; valueOf → objeto; toString → texto.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Integer.html#parseInt(java.lang.String)",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-instanceof-pattern",
+      "title": "instanceof com variável de padrão",
+      "category": "Classes e contratos",
+      "level": "Intermediário",
+      "question": "Receba um Object e devolva o tamanho somente quando ele for uma String não vazia.",
+      "answer": "Em Java 17, instanceof pode testar o tipo e declarar a variável tipada no mesmo passo.",
+      "imports": [],
+      "code": "public class Main {\n    static int tamanho(Object valor) {\n        if (valor instanceof String texto && !texto.isEmpty()) {\n            return texto.length();\n        }\n        return 0;\n    }\n    public static void main(String[] args) {\n        assert tamanho(\"java\") == 4;\n        assert tamanho(42) == 0;\n        assert tamanho(null) == 0;\n        assert tamanho(\"\") == 0;\n    }\n}\n",
+      "pitfall": "A variável só existe onde o compilador sabe que o teste deu certo. Trocar && por || neste exemplo invalida esse uso.",
+      "memory": "instanceof Tipo nome: testa e dá nome ao valor tipado.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/language/pattern-matching-instanceof-operator.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-construtor-this",
+      "title": "Classe, construtor e this",
+      "category": "Classes e contratos",
+      "level": "Base",
+      "question": "Crie uma Conta com identificador final e um construtor que receba esse identificador.",
+      "answer": "Construtor tem o nome da classe e não declara retorno. this identifica a instância atual.",
+      "imports": [],
+      "code": "public class Main {\n    static class Conta {\n        private final String id;\n        Conta(String id) { this.id = id; }\n        String id() { return id; }\n    }\n    public static void main(String[] args) {\n        Conta conta = new Conta(\"A1\");\n        assert conta.id().equals(\"A1\");\n    }\n}\n",
+      "pitfall": "Escrever void Conta(...) cria um método, não um construtor.",
+      "memory": "Mesmo nome, sem retorno; this.campo recebe o parâmetro.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-8.html#jls-8.8",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-static-final",
+      "title": "static e final",
+      "category": "Classes e contratos",
+      "level": "Base",
+      "question": "Declare constante static final, método static e uma referência final para objeto mutável.",
+      "answer": "static pertence à classe. final impede reatribuição de variável; o objeto referenciado ainda pode ser mutável.",
+      "imports": [],
+      "code": "public class Main {\n    static final int LIMITE = 3;\n    static boolean permitido(int n) { return n <= LIMITE; }\n    public static void main(String[] args) {\n        final StringBuilder texto = new StringBuilder(\"a\");\n        texto.append(\"b\");\n        assert texto.toString().equals(\"ab\");\n        assert Main.permitido(3);\n        assert !Main.permitido(4);\n    }\n}\n",
+      "pitfall": "static não significa thread-safe. final em uma referência não congela o conteúdo do objeto.",
+      "memory": "static = da classe; final = sem nova atribuição.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.12.4",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-acesso-encapsulamento",
+      "title": "Modificadores de acesso",
+      "category": "Classes e contratos",
+      "level": "Base",
+      "question": "Proteja um saldo com private e exponha uma operação validada; lembre os quatro níveis de acesso.",
+      "answer": "public é amplo; private restringe ao contexto da classe envolvente; ausência de modificador dá acesso de pacote. protected também admite acesso por subclasses, com regras entre pacotes.",
+      "imports": [],
+      "code": "public class Main {\n    public static void main(String[] args) {\n        Conta conta = new Conta();\n        conta.creditar(50);\n        assert conta.saldo() == 50;\n    }\n}\nclass Conta {\n    private int saldo;\n    public void creditar(int valor) {\n        if (valor <= 0) throw new IllegalArgumentException(\"valor\");\n        saldo += valor;\n    }\n    public int saldo() { return saldo; }\n}\n",
+      "pitfall": "Não invente a palavra package-private no código: esse acesso é escrito omitindo o modificador.",
+      "memory": "Dados privados, operações explícitas. Sem palavra = pacote.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-6.html#jls-6.6",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-interface-default",
+      "title": "interface, implements e default",
+      "category": "Classes e contratos",
+      "level": "Intermediário",
+      "question": "Declare uma interface de validação com um método abstrato e outro default; implemente-a.",
+      "answer": "implements estabelece o contrato. Um método default fornece implementação na interface; @Override verifica a sobrescrita.",
+      "imports": [],
+      "code": "public class Main {\n    interface Validador {\n        boolean valido(int valor);\n        default String nome() { return \"positivo\"; }\n    }\n    static class Positivo implements Validador {\n        @Override\n        public boolean valido(int valor) { return valor > 0; }\n    }\n    public static void main(String[] args) {\n        Validador regra = new Positivo();\n        assert regra.valido(1) && !regra.valido(0);\n        assert regra.nome().equals(\"positivo\");\n    }\n}\n",
+      "pitfall": "O método de implementação precisa manter o acesso public do contrato. Não diminua sua visibilidade.",
+      "memory": "Interface declara; implements cumpre; default oferece corpo.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-9.html#jls-9.4",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-abstract-override",
+      "title": "abstract, extends e @Override",
+      "category": "Classes e contratos",
+      "level": "Intermediário",
+      "question": "Modele uma classe abstrata com estado e um método abstrato; implemente-o na subclasse.",
+      "answer": "Classe abstrata pode compartilhar estado e comportamento. Uma subclasse concreta implementa os métodos abstratos herdados.",
+      "imports": [],
+      "code": "public class Main {\n    static abstract class Regra {\n        protected final int limite;\n        Regra(int limite) { this.limite = limite; }\n        abstract boolean aceita(int valor);\n    }\n    static class AteLimite extends Regra {\n        AteLimite(int limite) { super(limite); }\n        @Override boolean aceita(int valor) { return valor <= limite; }\n    }\n    public static void main(String[] args) {\n        Regra regra = new AteLimite(10);\n        assert regra.aceita(10) && !regra.aceita(11);\n    }\n}\n",
+      "pitfall": "Não instancie a classe abstrata. Em Java 17, super(...) ou this(...) explícito vem primeiro no construtor.",
+      "memory": "extends herda; super inicializa a base; Override substitui comportamento.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-8.html#jls-8.1.1.1",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-record-validacao",
+      "title": "record e construtor compacto",
+      "category": "Classes e contratos",
+      "level": "Intermediário",
+      "question": "Crie um record Valor com centavos não negativos, leia o componente e compare duas instâncias.",
+      "answer": "record gera acesso, equals, hashCode e toString a partir dos componentes. O construtor compacto permite validar entradas.",
+      "imports": [],
+      "code": "public class Main {\n    record Valor(long centavos) {\n        Valor {\n            if (centavos < 0) throw new IllegalArgumentException(\"centavos\");\n        }\n    }\n    public static void main(String[] args) {\n        Valor valor = new Valor(100);\n        assert valor.centavos() == 100;\n        assert valor.equals(new Valor(100));\n        boolean rejeitou = false;\n        try { new Valor(-1); }\n        catch (IllegalArgumentException erro) { rejeitou = true; }\n        assert rejeitou;\n    }\n}\n",
+      "pitfall": "O acesso é centavos(), não getCentavos(). Um componente mutável pode continuar mutável: record não garante imutabilidade profunda.",
+      "memory": "record Nome(componentes); corpo compacto valida antes de atribuir.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-enum",
+      "title": "enum: conjunto fechado de valores",
+      "category": "Classes e contratos",
+      "level": "Base",
+      "question": "Declare três estados, percorra values() e transforme \"APROVADO\" em enum.",
+      "answer": "enum representa um conjunto de constantes nomeadas. values() enumera e valueOf exige o nome exato.",
+      "imports": [],
+      "code": "public class Main {\n    enum Estado { PENDENTE, APROVADO, RECUSADO }\n    public static void main(String[] args) {\n        Estado atual = Estado.valueOf(\"APROVADO\");\n        assert atual == Estado.APROVADO;\n        assert atual.name().equals(\"APROVADO\");\n        assert Estado.values().length == 3;\n        for (Estado estado : Estado.values()) {\n            assert estado != null;\n        }\n    }\n}\n",
+      "pitfall": "valueOf diferencia maiúsculas de minúsculas. Evite persistir ordinal(): inserir uma constante pode alterar posições.",
+      "memory": "Nome vira enum com valueOf; enum vira nome com name.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Enum.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-throw-throws",
+      "title": "throw versus throws",
+      "category": "Erros e recursos",
+      "level": "Base",
+      "question": "Declare um método que lança IOException e trate a exceção no chamador.",
+      "answer": "throw lança uma exceção; throws declara a possibilidade na assinatura. Exceções verificadas precisam ser tratadas ou declaradas.",
+      "imports": [
+        "import java.io.IOException;"
+      ],
+      "code": "import java.io.IOException;\npublic class Main {\n    static void carregar(boolean disponivel) throws IOException {\n        if (!disponivel) throw new IOException(\"indisponível\");\n    }\n    public static void main(String[] args) {\n        boolean capturou = false;\n        try { carregar(false); }\n        catch (IOException erro) {\n            capturou = erro.getMessage().equals(\"indisponível\");\n        }\n        assert capturou;\n    }\n}\n",
+      "pitfall": "Declarar throws não trata o problema. Não capture Exception genericamente para fingir que a operação foi bem-sucedida.",
+      "memory": "throw faz; throws avisa.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-11.html#jls-11.2",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-try-catch-finally",
+      "title": "try, catch e finally",
+      "category": "Erros e recursos",
+      "level": "Base",
+      "question": "Tente converter uma entrada inválida, trate NumberFormatException e registre a passagem pelo finally.",
+      "answer": "try contém a operação; catch trata tipos compatíveis; finally roda ao sair do bloco em condições normais de execução da JVM.",
+      "imports": [],
+      "code": "public class Main {\n    public static void main(String[] args) {\n        boolean tratou = false;\n        boolean finalizou = false;\n        try {\n            Integer.parseInt(\"x\");\n        } catch (NumberFormatException erro) {\n            tratou = true;\n        } finally {\n            finalizou = true;\n        }\n        assert tratou && finalizou;\n    }\n}\n",
+      "pitfall": "Um return ou throw no finally pode esconder o retorno ou a exceção original. Para recursos, prefira try-with-resources.",
+      "memory": "Tentar → tratar → finalizar, sem sobrescrever o resultado na finalização.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-14.html#jls-14.20",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-try-with-resources",
+      "title": "try-with-resources e AutoCloseable",
+      "category": "Erros e recursos",
+      "level": "Intermediário",
+      "question": "Crie um recurso AutoCloseable e demonstre que close() roda mesmo quando o corpo falha.",
+      "answer": "Recursos declarados no try são fechados automaticamente. Vários recursos fecham na ordem inversa à declaração.",
+      "imports": [],
+      "code": "public class Main {\n    static class Recurso implements AutoCloseable {\n        boolean fechado;\n        @Override public void close() { fechado = true; }\n    }\n    public static void main(String[] args) {\n        Recurso recurso = new Recurso();\n        boolean capturou = false;\n        try (recurso) {\n            throw new IllegalStateException(\"falha\");\n        } catch (IllegalStateException erro) {\n            capturou = true;\n        }\n        assert capturou && recurso.fechado;\n    }\n}\n",
+      "pitfall": "Se corpo e close falham, a exceção de fechamento pode aparecer como suprimida. Inspecione getSuppressed() ao diagnosticar.",
+      "memory": "Abriu no try: fecha ao sair.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/AutoCloseable.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "jb-passagem-por-valor",
+      "title": "Java passa argumentos por valor",
+      "category": "Classes e contratos",
+      "level": "Intermediário",
+      "question": "Demonstre a diferença entre alterar o objeto recebido e reatribuir o parâmetro que aponta para ele.",
+      "answer": "O método recebe uma cópia do valor da referência. Essa cópia aponta para o mesmo objeto, mas sua reatribuição fica local.",
+      "imports": [],
+      "code": "public class Main {\n    static void alterar(StringBuilder texto) {\n        texto.append(\"b\");\n        texto = new StringBuilder(\"outro\");\n        texto.append(\"!\");\n    }\n    public static void main(String[] args) {\n        StringBuilder original = new StringBuilder(\"a\");\n        alterar(original);\n        assert original.toString().equals(\"ab\");\n    }\n}\n",
+      "pitfall": "Dizer que Java passa objetos por referência gera a previsão errada de que reatribuir texto altera original.",
+      "memory": "Copia o endereço; compartilhar objeto não compartilha a variável.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.12.4.2",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-arraylist",
+      "title": "ArrayList: add, get, set e remove",
+      "category": "Coleções e algoritmos",
+      "level": "Intermediário",
+      "question": "Crie uma lista de inteiros, substitua um elemento e remova o valor 20 sem confundi-lo com um índice.",
+      "answer": "ArrayList mantém ordem e aceita repetição. get/set usam índice; add ao final tem custo amortizado constante. Remover no meio desloca elementos.",
+      "imports": [
+        "import java.util.ArrayList;",
+        "import java.util.List;"
+      ],
+      "code": "import java.util.ArrayList;\nimport java.util.List;\n\npublic class Main {\n  public static void main(String[] args) {\n    List<Integer> values = new ArrayList<>();\n    values.add(10);\n    values.add(20);\n    values.add(30);\n    values.set(0, 15);\n    boolean removed = values.remove(Integer.valueOf(20));\n    assert removed;\n    assert values.equals(List.of(15, 30));\n    assert values.get(1) == 30;\n    assert values.size() == 2;\n  }\n}\n",
+      "pitfall": "remove(1) remove o índice 1; remove(Integer.valueOf(1)) remove o valor 1. Acesso concorrente mutável exige coordenação.",
+      "memory": "Lista = posição. add entra; get lê; set troca; remove sai.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/ArrayList.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-hashmap-default",
+      "title": "HashMap: put, getOrDefault e containsKey",
+      "category": "Coleções e algoritmos",
+      "level": "Intermediário",
+      "question": "Conte a primeira ocorrência de uma chave e mostre o que getOrDefault faz quando o valor existente é null.",
+      "answer": "getOrDefault devolve o padrão se a chave estiver ausente. Não altera o mapa. containsKey distingue ausência de uma associação explícita com null.",
+      "imports": [
+        "import java.util.HashMap;",
+        "import java.util.Map;"
+      ],
+      "code": "import java.util.HashMap;\nimport java.util.Map;\n\npublic class Main {\n  public static void main(String[] args) {\n    Map<String, Integer> counts = new HashMap<>();\n    int previous = counts.getOrDefault(\"pix\", 0);\n    counts.put(\"pix\", previous + 1);\n    assert counts.get(\"pix\") == 1;\n    assert counts.getOrDefault(\"card\", 0) == 0;\n    assert !counts.containsKey(\"card\");\n    counts.put(\"unknown\", null);\n    assert counts.containsKey(\"unknown\");\n    assert counts.getOrDefault(\"unknown\", 99) == null;\n  }\n}\n",
+      "pitfall": "HashMap não garante ordem nem segurança entre threads. Desempacotar um Integer null provoca NullPointerException.",
+      "memory": "Default cobre ausência; não substitui null existente.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/HashMap.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-hashmap-compute",
+      "title": "computeIfAbsent: agrupar sem if repetido",
+      "category": "Coleções e algoritmos",
+      "level": "Intermediário",
+      "question": "Agrupe dois identificadores de compra pela mesma conta usando computeIfAbsent.",
+      "answer": "computeIfAbsent cria o valor quando não há valor não nulo e devolve o valor associado. A função deve produzir o objeto inicial.",
+      "imports": [
+        "import java.util.HashMap;",
+        "import java.util.Map;",
+        "import java.util.List;",
+        "import java.util.ArrayList;"
+      ],
+      "code": "import java.util.HashMap;\nimport java.util.Map;\nimport java.util.List;\nimport java.util.ArrayList;\n\npublic class Main {\n  public static void main(String[] args) {\n    Map<String, List<String>> purchases = new HashMap<>();\n    purchases.computeIfAbsent(\"account-1\", key -> new ArrayList<>())\n        .add(\"purchase-1\");\n    purchases.computeIfAbsent(\"account-1\", key -> new ArrayList<>())\n        .add(\"purchase-2\");\n    assert purchases.size() == 1;\n    assert purchases.get(\"account-1\")\n        .equals(List.of(\"purchase-1\", \"purchase-2\"));\n  }\n}\n",
+      "pitfall": "Criar uma lista via mapa concorrente não torna os adds dessa lista automaticamente seguros entre threads.",
+      "memory": "Se falta, fabrica; depois usa o valor.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/HashMap.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-hashmap-merge",
+      "title": "merge: contagem e combinação",
+      "category": "Coleções e algoritmos",
+      "level": "Intermediário",
+      "question": "Conte tipos de evento com merge e explique o significado de retornar null na função de combinação.",
+      "answer": "merge usa o valor informado quando falta valor não nulo; caso contrário combina antigo e novo. Um resultado null remove a associação.",
+      "imports": [
+        "import java.util.HashMap;",
+        "import java.util.Map;",
+        "import java.util.List;"
+      ],
+      "code": "import java.util.HashMap;\nimport java.util.Map;\nimport java.util.List;\n\npublic class Main {\n  public static void main(String[] args) {\n    Map<String, Integer> counts = new HashMap<>();\n    for (String type : List.of(\"paid\", \"paid\", \"failed\")) {\n      counts.merge(type, 1, Integer::sum);\n    }\n    assert counts.get(\"paid\") == 2;\n    assert counts.get(\"failed\") == 1;\n    counts.merge(\"failed\", 1, (oldValue, newValue) -> null);\n    assert !counts.containsKey(\"failed\");\n  }\n}\n",
+      "pitfall": "merge num HashMap não é uma transação concorrente. Para contagens grandes, avalie overflow e o tipo numérico.",
+      "memory": "Merge = valor inicial + regra para combinar.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/HashMap.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-hashset",
+      "title": "HashSet: presença e deduplicação",
+      "category": "Coleções e algoritmos",
+      "level": "Intermediário",
+      "question": "Detecte a segunda ocorrência de um ID usando somente o retorno de add.",
+      "answer": "Set representa unicidade. add devolve false quando o elemento já existe; contains consulta e remove exclui. HashSet não preserva ordem.",
+      "imports": [
+        "import java.util.HashSet;",
+        "import java.util.Set;"
+      ],
+      "code": "import java.util.HashSet;\nimport java.util.Set;\n\npublic class Main {\n  public static void main(String[] args) {\n    Set<String> seen = new HashSet<>();\n    boolean first = seen.add(\"event-7\");\n    boolean duplicate = !seen.add(\"event-7\");\n    assert first;\n    assert duplicate;\n    assert seen.contains(\"event-7\");\n    assert seen.size() == 1;\n    boolean removed = seen.remove(\"event-7\");\n    assert removed && seen.isEmpty();\n  }\n}\n",
+      "pitfall": "Um Set em memória perde o histórico no reinício; não resolve sozinho idempotência distribuída.",
+      "memory": "Set pergunta: já vi? add responde se entrou.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/HashSet.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-deque-stack",
+      "title": "ArrayDeque como pilha: push, peek, pop",
+      "category": "Coleções e algoritmos",
+      "level": "Intermediário",
+      "question": "Empilhe A e B; consulte e remova o topo. Qual elemento sai primeiro?",
+      "answer": "Deque permite operações nas duas pontas. Como pilha, push adiciona no início, peek consulta o início e pop remove do início: LIFO.",
+      "imports": [
+        "import java.util.ArrayDeque;",
+        "import java.util.Deque;"
+      ],
+      "code": "import java.util.ArrayDeque;\nimport java.util.Deque;\n\npublic class Main {\n  public static void main(String[] args) {\n    Deque<String> stack = new ArrayDeque<>();\n    stack.push(\"A\");\n    stack.push(\"B\");\n    assert stack.peek().equals(\"B\");\n    String first = stack.pop();\n    String second = stack.pop();\n    assert first.equals(\"B\") && second.equals(\"A\");\n    assert stack.peek() == null;\n  }\n}\n",
+      "pitfall": "pop em pilha vazia lança exceção. ArrayDeque rejeita null e não é seguro para mutação concorrente.",
+      "memory": "Pilha de pratos: último colocado, primeiro retirado.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/ArrayDeque.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-deque-queue",
+      "title": "ArrayDeque como fila: offer, peek, poll",
+      "category": "Coleções e algoritmos",
+      "level": "Intermediário",
+      "question": "Enfileire A e B; retire sem lançar exceção quando a fila terminar.",
+      "answer": "Como Queue, offer adiciona ao fim, peek consulta a cabeça e poll retira a cabeça: FIFO. poll devolve null quando vazia.",
+      "imports": [
+        "import java.util.ArrayDeque;",
+        "import java.util.Queue;"
+      ],
+      "code": "import java.util.ArrayDeque;\nimport java.util.Queue;\n\npublic class Main {\n  public static void main(String[] args) {\n    Queue<String> queue = new ArrayDeque<>();\n    queue.offer(\"A\");\n    queue.offer(\"B\");\n    assert queue.peek().equals(\"A\");\n    String first = queue.poll();\n    String second = queue.poll();\n    String empty = queue.poll();\n    assert first.equals(\"A\") && second.equals(\"B\");\n    assert empty == null;\n  }\n}\n",
+      "pitfall": "Misturar push/pop com offer/poll muda a ordem pretendida. Para produtor/consumidor concorrente, considere uma BlockingQueue apropriada.",
+      "memory": "Fila de atendimento: primeiro chega, primeiro sai.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/ArrayDeque.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-priorityqueue-comparator",
+      "title": "PriorityQueue e Comparator: menor primeiro",
+      "category": "Coleções e algoritmos",
+      "level": "Intermediário",
+      "question": "Ordene tarefas por prioridade numérica e desempate pelo ID, sem subtrair inteiros no comparator.",
+      "answer": "PriorityQueue expõe o menor elemento segundo seu Comparator. comparingInt seleciona o campo; thenComparing define desempate.",
+      "imports": [
+        "import java.util.PriorityQueue;",
+        "import java.util.Comparator;"
+      ],
+      "code": "import java.util.PriorityQueue;\nimport java.util.Comparator;\n\npublic class Main {\n  record Job(String id, int priority) {}\n  public static void main(String[] args) {\n    var order = Comparator.comparingInt(Job::priority)\n        .thenComparing(Job::id);\n    var queue = new PriorityQueue<Job>(order);\n    queue.offer(new Job(\"B\", 1));\n    queue.offer(new Job(\"A\", 1));\n    queue.offer(new Job(\"C\", 2));\n    Job first = queue.poll();\n    assert first.id().equals(\"A\");\n    assert queue.peek().id().equals(\"B\");\n  }\n}\n",
+      "pitfall": "Iterar a fila não produz sequência ordenada. Não altere a prioridade de objetos já inseridos; remover e reinserir mantém a estrutura correta.",
+      "memory": "Heap entrega o próximo; não entrega uma lista já ordenada.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/PriorityQueue.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-treemap-range",
+      "title": "TreeMap: floorEntry, ceilingEntry e subMap",
+      "category": "Coleções e algoritmos",
+      "level": "Intermediário",
+      "question": "Encontre o limite imediatamente abaixo de 15 e o primeiro limite a partir de 15.",
+      "answer": "TreeMap ordena chaves. floorEntry busca a maior chave <= alvo; ceilingEntry, a menor >= alvo. subMap delimita um intervalo.",
+      "imports": [
+        "import java.util.TreeMap;"
+      ],
+      "code": "import java.util.TreeMap;\n\npublic class Main {\n  public static void main(String[] args) {\n    var bands = new TreeMap<Integer, String>();\n    bands.put(10, \"basic\");\n    bands.put(20, \"plus\");\n    bands.put(30, \"premium\");\n    assert bands.floorEntry(15).getKey() == 10;\n    assert bands.ceilingEntry(15).getKey() == 20;\n    assert bands.floorEntry(5) == null;\n    var range = bands.subMap(10, true, 30, false);\n    assert range.size() == 2;\n  }\n}\n",
+      "pitfall": "subMap é uma visão ligada ao mapa original. Comparação que considera chaves distintas iguais pode substituir associações.",
+      "memory": "Floor = chão abaixo; ceiling = teto acima.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/TreeMap.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-arrays-collections",
+      "title": "Arrays e Collections: ordenar, buscar, inverter",
+      "category": "Coleções e algoritmos",
+      "level": "Intermediário",
+      "question": "Ordene um array, busque 3 e faça o equivalente em uma lista mutável.",
+      "answer": "Arrays reúne operações sobre arrays; Collections, algoritmos sobre coleções. binarySearch pressupõe ordenação pelo mesmo critério da busca.",
+      "imports": [
+        "import java.util.Arrays;",
+        "import java.util.Collections;",
+        "import java.util.ArrayList;",
+        "import java.util.List;"
+      ],
+      "code": "import java.util.Arrays;\nimport java.util.Collections;\nimport java.util.ArrayList;\nimport java.util.List;\n\npublic class Main {\n  public static void main(String[] args) {\n    int[] numbers = {5, 1, 3};\n    Arrays.sort(numbers);\n    assert Arrays.equals(numbers, new int[] {1, 3, 5});\n    assert Arrays.binarySearch(numbers, 3) == 1;\n    List<Integer> values = new ArrayList<>(List.of(5, 1, 3));\n    Collections.sort(values);\n    assert Collections.binarySearch(values, 3) == 1;\n    Collections.reverse(values);\n    assert values.equals(List.of(5, 3, 1));\n  }\n}\n",
+      "pitfall": "Buscar binariamente depois de inverter quebra a precondição da ordem natural. Arrays.asList(int[]) cria uma lista com um array, não uma lista de Integer.",
+      "memory": "Arrays para []; Collections para List/Set e outras coleções.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Arrays.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-list-mutability",
+      "title": "List.of, Arrays.asList e ArrayList",
+      "category": "Coleções e algoritmos",
+      "level": "Intermediário",
+      "question": "Compare uma lista não modificável, uma lista de tamanho fixo e uma cópia mutável.",
+      "answer": "List.of rejeita null e alterações na lista. Arrays.asList permite set, mas tem tamanho fixo e compartilha o array. new ArrayList<>(origem) permite mudar o tamanho.",
+      "imports": [
+        "import java.util.List;",
+        "import java.util.Arrays;",
+        "import java.util.ArrayList;"
+      ],
+      "code": "import java.util.List;\nimport java.util.Arrays;\nimport java.util.ArrayList;\n\npublic class Main {\n  public static void main(String[] args) {\n    List<String> fixed = List.of(\"A\", \"B\");\n    List<String> mutable = new ArrayList<>(fixed);\n    mutable.add(\"C\");\n    assert fixed.size() == 2 && mutable.size() == 3;\n    String[] array = {\"X\", \"Y\"};\n    List<String> view = Arrays.asList(array);\n    view.set(0, \"Z\");\n    assert array[0].equals(\"Z\");\n    boolean rejected = false;\n    try { fixed.add(\"C\"); }\n    catch (UnsupportedOperationException expected) { rejected = true; }\n    assert rejected;\n  }\n}\n",
+      "pitfall": "Lista não modificável não significa objetos internos imutáveis. Copiar a lista copia referências, não clona seus elementos.",
+      "memory": "of trava a lista; asList fixa tamanho; ArrayList permite crescer.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-equals-hashcode",
+      "title": "equals e hashCode: a dupla das chaves",
+      "category": "Coleções e algoritmos",
+      "level": "Staff",
+      "question": "Implemente uma chave por valor e demonstre que duas instâncias equivalentes ocupam uma única posição no HashSet.",
+      "answer": "Objetos iguais por equals precisam produzir o mesmo hashCode. O inverso não vale: colisões são possíveis. Use campos estáveis que definam a identidade.",
+      "imports": [
+        "import java.util.Objects;",
+        "import java.util.HashSet;",
+        "import java.util.Set;"
+      ],
+      "code": "import java.util.Objects;\nimport java.util.HashSet;\nimport java.util.Set;\n\npublic class Main {\n  static final class Key {\n    private final String id;\n    Key(String id) { this.id = Objects.requireNonNull(id); }\n    @Override public boolean equals(Object other) {\n      return this == other || (other instanceof Key key && id.equals(key.id));\n    }\n    @Override public int hashCode() { return Objects.hash(id); }\n  }\n  public static void main(String[] args) {\n    Set<Key> keys = new HashSet<>();\n    keys.add(new Key(\"A\"));\n    keys.add(new Key(\"A\"));\n    assert keys.size() == 1;\n    assert new Key(\"A\").hashCode() == new Key(\"A\").hashCode();\n  }\n}\n",
+      "pitfall": "Alterar campos usados em equals/hashCode depois de inserir a chave pode impedir buscas corretas. final na referência não congela objetos referenciados.",
+      "memory": "Iguais => mesmo hash; mesmo hash não prova igualdade.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-generics-pecs",
+      "title": "Genéricos: Producer Extends, Consumer Super",
+      "category": "Lambdas, streams e genéricos",
+      "level": "Staff",
+      "question": "Escreva copy para ler Integer de uma lista e escrever em uma lista de Number.",
+      "answer": "Uma origem produtora usa ? extends T; um destino consumidor usa ? super T. List<Integer> não é subtipo de List<Number>. O método escolhe T pela chamada.",
+      "imports": [
+        "import java.util.List;",
+        "import java.util.ArrayList;"
+      ],
+      "code": "import java.util.List;\nimport java.util.ArrayList;\n\npublic class Main {\n  static <T> void copy(List<? extends T> source, List<? super T> target) {\n    for (T item : source) target.add(item);\n  }\n  public static void main(String[] args) {\n    List<Integer> source = List.of(1, 2);\n    List<Number> target = new ArrayList<>();\n    copy(source, target);\n    assert target.equals(List.of(1, 2));\n    Number first = target.get(0);\n    assert first.intValue() == 1;\n  }\n}\n",
+      "pitfall": "Em List<? extends Number>, não é seguro adicionar Integer arbitrário: a lista real poderia ser de Double. Em ? super T, a leitura geral é Object.",
+      "memory": "PECS: Producer Extends, Consumer Super. Leio da origem; escrevo no destino.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Collections.html#copy(java.util.List,java.util.List)",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-functional-interfaces",
+      "title": "Predicate, Function, Consumer e Supplier",
+      "category": "Lambdas, streams e genéricos",
+      "level": "Intermediário",
+      "question": "Escreva uma lambda para testar, transformar, consumir e fornecer um valor; invoque seus métodos corretos.",
+      "answer": "Predicate<T>.test devolve boolean; Function<T,R>.apply transforma; Consumer<T>.accept recebe sem retorno; Supplier<T>.get fornece sem argumento.",
+      "imports": [
+        "import java.util.function.Predicate;",
+        "import java.util.function.Function;",
+        "import java.util.function.Consumer;",
+        "import java.util.function.Supplier;",
+        "import java.util.ArrayList;",
+        "import java.util.List;"
+      ],
+      "code": "import java.util.function.Predicate;\nimport java.util.function.Function;\nimport java.util.function.Consumer;\nimport java.util.function.Supplier;\nimport java.util.ArrayList;\nimport java.util.List;\n\npublic class Main {\n  public static void main(String[] args) {\n    Predicate<String> valid = text -> !text.isBlank();\n    Function<String, Integer> length = String::length;\n    List<String> received = new ArrayList<>();\n    Consumer<String> save = received::add;\n    Supplier<String> create = () -> \"ok\";\n    String value = create.get();\n    assert valid.test(value);\n    assert length.apply(value) == 2;\n    save.accept(value);\n    assert received.equals(List.of(\"ok\"));\n  }\n}\n",
+      "pitfall": "Variáveis locais capturadas por lambdas precisam ser final ou efetivamente final. Um objeto capturado ainda pode ser mutável.",
+      "memory": "Predicado testa; função aplica; consumidor aceita; fornecedor entrega com get.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/package-summary.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-stream-map-filter",
+      "title": "Stream: filter, map e toList",
+      "category": "Lambdas, streams e genéricos",
+      "level": "Intermediário",
+      "question": "Filtre valores positivos, dobre cada um e obtenha uma lista sem alterar a origem.",
+      "answer": "filter seleciona elementos; map transforma cada elemento; toList termina o pipeline e entrega uma lista não modificável no Java 17.",
+      "imports": [
+        "import java.util.List;"
+      ],
+      "code": "import java.util.List;\n\npublic class Main {\n  public static void main(String[] args) {\n    List<Integer> input = List.of(-1, 0, 2, 3);\n    List<Integer> doubled = input.stream()\n        .filter(value -> value > 0)\n        .map(value -> value * 2)\n        .toList();\n    assert doubled.equals(List.of(4, 6));\n    assert input.equals(List.of(-1, 0, 2, 3));\n    assert List.<Integer>of().stream().toList().isEmpty();\n  }\n}\n",
+      "pitfall": "Stream é consumido uma vez. Operações intermediárias são lazy; evite depender de efeitos colaterais e não modifique a origem durante o pipeline.",
+      "memory": "Filtra quem passa, mapeia o valor, terminal materializa.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/stream/Stream.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-stream-reduce",
+      "title": "reduce: identidade e associatividade",
+      "category": "Lambdas, streams e genéricos",
+      "level": "Staff",
+      "question": "Some uma lista com reduce e explique por que zero é a identidade.",
+      "answer": "reduce acumula valores. A identidade deve deixar o elemento inalterado e a operação deve ser associativa; isso importa para particionar o cálculo corretamente.",
+      "imports": [
+        "import java.util.List;"
+      ],
+      "code": "import java.util.List;\n\npublic class Main {\n  public static void main(String[] args) {\n    List<Integer> values = List.of(2, 3, 4);\n    int sum = values.stream().reduce(0, Integer::sum);\n    int empty = List.<Integer>of().stream().reduce(0, Integer::sum);\n    int primitiveSum = values.stream().mapToInt(Integer::intValue).sum();\n    assert sum == 9;\n    assert empty == 0;\n    assert primitiveSum == sum;\n  }\n}\n",
+      "pitfall": "Subtração não é associativa. Evite usar uma coleção mutável como identidade de reduce; use collect para acumulação mutável.",
+      "memory": "Soma começa em 0; produto em 1; operação precisa reagrupar sem mudar o resultado.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/stream/Stream.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-stream-grouping",
+      "title": "Collectors.groupingBy e counting",
+      "category": "Lambdas, streams e genéricos",
+      "level": "Intermediário",
+      "question": "Conte pagamentos por status com um collector e confirme o tipo Long do resultado.",
+      "answer": "groupingBy separa por chave; o collector downstream define o que calcular em cada grupo. counting devolve Long.",
+      "imports": [
+        "import java.util.List;",
+        "import java.util.Map;",
+        "import java.util.stream.Collectors;"
+      ],
+      "code": "import java.util.List;\nimport java.util.Map;\nimport java.util.stream.Collectors;\n\npublic class Main {\n  public static void main(String[] args) {\n    List<String> statuses = List.of(\"paid\", \"failed\", \"paid\");\n    Map<String, Long> counts = statuses.stream()\n        .collect(Collectors.groupingBy(\n            status -> status, Collectors.counting()));\n    assert counts.get(\"paid\") == 2L;\n    assert counts.get(\"failed\") == 1L;\n    assert counts.getOrDefault(\"pending\", 0L) == 0L;\n  }\n}\n",
+      "pitfall": "Não assuma ordem do mapa produzido. Para toMap com chaves repetidas, defina a regra de merge em vez de aceitar uma exceção surpresa.",
+      "memory": "groupingBy escolhe a gaveta; downstream escolhe o cálculo dentro dela.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/stream/Collectors.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-optional",
+      "title": "Optional: ofNullable, map e orElseGet",
+      "category": "Lambdas, streams e genéricos",
+      "level": "Intermediário",
+      "question": "Trate nome ausente e prove que o fallback de orElseGet só executa quando necessário.",
+      "answer": "Optional representa presença ou ausência. ofNullable aceita null; map transforma o valor presente; orElseGet recebe um Supplier para produzir o fallback sob demanda.",
+      "imports": [
+        "import java.util.Optional;",
+        "import java.util.concurrent.atomic.AtomicInteger;"
+      ],
+      "code": "import java.util.Optional;\nimport java.util.concurrent.atomic.AtomicInteger;\n\npublic class Main {\n  public static void main(String[] args) {\n    var calls = new AtomicInteger();\n    String present = Optional.ofNullable(\" ana \")\n        .map(String::trim)\n        .orElseGet(() -> { calls.incrementAndGet(); return \"unknown\"; });\n    String absent = Optional.<String>ofNullable(null)\n        .orElseGet(() -> { calls.incrementAndGet(); return \"unknown\"; });\n    assert present.equals(\"ana\");\n    assert absent.equals(\"unknown\");\n    assert calls.get() == 1;\n  }\n}\n",
+      "pitfall": "orElse(expensive()) avalia expensive() antes da chamada, mesmo com valor presente. get() sem verificar presença pode lançar exceção.",
+      "memory": "Else recebe valor pronto; ElseGet recebe receita para gerar.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-bigdecimal-equality",
+      "title": "BigDecimal: compareTo versus equals",
+      "category": "Dinheiro e tempo",
+      "level": "Intermediário",
+      "question": "Compare 10.0 com 10.00 por valor e por representação; some 0.1 e 0.2 exatamente.",
+      "answer": "compareTo compara o valor numérico; equals considera valor e escala. Construção por texto preserva o decimal informado.",
+      "imports": [
+        "import java.math.BigDecimal;"
+      ],
+      "code": "import java.math.BigDecimal;\n\npublic class Main {\n  public static void main(String[] args) {\n    BigDecimal a = new BigDecimal(\"10.0\");\n    BigDecimal b = new BigDecimal(\"10.00\");\n    assert a.compareTo(b) == 0;\n    assert !a.equals(b);\n    BigDecimal sum = new BigDecimal(\"0.1\").add(new BigDecimal(\"0.2\"));\n    assert sum.compareTo(new BigDecimal(\"0.3\")) == 0;\n    assert a.compareTo(BigDecimal.ZERO) > 0;\n  }\n}\n",
+      "pitfall": "new BigDecimal(0.1) conserva a aproximação binária do double. Decida normalização de escala antes de usar valores monetários como chaves.",
+      "memory": "compareTo pergunta quanto; equals pergunta quanto e com qual escala.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigDecimal.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-bigdecimal-rounding",
+      "title": "BigDecimal: divide, setScale e RoundingMode",
+      "category": "Dinheiro e tempo",
+      "level": "Staff",
+      "question": "Divida 10 por 3 com duas casas e arredondamento explícito. Converta 12.34 em centavos sem truncar silenciosamente.",
+      "answer": "divide com escala e RoundingMode explicita a política de arredondamento. setScale devolve novo valor; longValueExact rejeita perda de informação e overflow.",
+      "imports": [
+        "import java.math.BigDecimal;",
+        "import java.math.RoundingMode;"
+      ],
+      "code": "import java.math.BigDecimal;\nimport java.math.RoundingMode;\n\npublic class Main {\n  public static void main(String[] args) {\n    BigDecimal part = new BigDecimal(\"10\")\n        .divide(new BigDecimal(\"3\"), 2, RoundingMode.HALF_EVEN);\n    BigDecimal rounded = new BigDecimal(\"2.345\")\n        .setScale(2, RoundingMode.HALF_EVEN);\n    long cents = new BigDecimal(\"12.34\").movePointRight(2).longValueExact();\n    assert part.equals(new BigDecimal(\"3.33\"));\n    assert rounded.equals(new BigDecimal(\"2.34\"));\n    assert cents == 1234L;\n  }\n}\n",
+      "pitfall": "Arredondamento é regra de negócio, não uma escolha universal. Ratear 10 em três parcelas de 3.33 deixa 0.01 a distribuir explicitamente.",
+      "memory": "Dividir exige decidir casas e regra; converter exige decidir se perder informação é permitido.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/math/BigDecimal.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-instant-duration-clock",
+      "title": "Instant, Duration e Clock para testes",
+      "category": "Dinheiro e tempo",
+      "level": "Intermediário",
+      "question": "Calcule uma expiração cinco minutos à frente usando um relógio fixo e reproduzível.",
+      "answer": "Instant identifica um ponto na linha do tempo; Duration representa duração. Receber Clock permite controlar o agora nos testes.",
+      "imports": [
+        "import java.time.Clock;",
+        "import java.time.Duration;",
+        "import java.time.Instant;",
+        "import java.time.ZoneOffset;"
+      ],
+      "code": "import java.time.Clock;\nimport java.time.Duration;\nimport java.time.Instant;\nimport java.time.ZoneOffset;\n\npublic class Main {\n  public static void main(String[] args) {\n    Clock clock = Clock.fixed(\n        Instant.parse(\"2026-01-01T10:00:00Z\"), ZoneOffset.UTC);\n    Instant now = Instant.now(clock);\n    Instant expiresAt = now.plus(Duration.ofMinutes(5));\n    assert Duration.between(now, expiresAt).toSeconds() == 300;\n    assert now.isBefore(expiresAt);\n    assert !expiresAt.isBefore(expiresAt);\n  }\n}\n",
+      "pitfall": "Defina se expira exatamente no limite: !now.isBefore(expiresAt) inclui igualdade. Para medir duração de execução local, use relógio monotônico como System.nanoTime.",
+      "memory": "Instant é ponto; Duration é distância; Clock controla o agora.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Instant.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-localdate-zone",
+      "title": "LocalDate, ZoneId e limite de dia",
+      "category": "Dinheiro e tempo",
+      "level": "Staff",
+      "question": "Converta um instante UTC para a data local de São Paulo e encontre o início do dia nessa zona.",
+      "answer": "LocalDate contém somente data. Um instante ganha contexto civil com ZoneId; atStartOfDay(zone) usa as regras da zona para produzir o primeiro horário válido do dia.",
+      "imports": [
+        "import java.time.Instant;",
+        "import java.time.LocalDate;",
+        "import java.time.ZoneId;"
+      ],
+      "code": "import java.time.Instant;\nimport java.time.LocalDate;\nimport java.time.ZoneId;\n\npublic class Main {\n  public static void main(String[] args) {\n    ZoneId zone = ZoneId.of(\"America/Sao_Paulo\");\n    Instant event = Instant.parse(\"2026-01-02T01:00:00Z\");\n    LocalDate date = event.atZone(zone).toLocalDate();\n    Instant start = date.atStartOfDay(zone).toInstant();\n    assert date.equals(LocalDate.of(2026, 1, 1));\n    assert start.equals(Instant.parse(\"2026-01-01T03:00:00Z\"));\n    assert date.plusDays(1).equals(LocalDate.of(2026, 1, 2));\n  }\n}\n",
+      "pitfall": "LocalDateTime não identifica um instante sem zona/offset. Um dia civil não é sempre uma duração de 24 horas por causa das regras locais de fuso.",
+      "memory": "Data é calendário; instante é linha do tempo; zona faz a ponte.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/LocalDate.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-executor-future",
+      "title": "ExecutorService, submit e Future.get",
+      "category": "Concorrência",
+      "level": "Staff",
+      "question": "Execute uma tarefa num pool, obtenha seu resultado com timeout e encerre o executor no Java 17.",
+      "answer": "submit devolve Future. get(timeout, unidade) aguarda até o limite; shutdown rejeita novas tarefas e permite terminar as já submetidas.",
+      "imports": [
+        "import java.util.concurrent.ExecutorService;",
+        "import java.util.concurrent.Executors;",
+        "import java.util.concurrent.Future;",
+        "import java.util.concurrent.TimeUnit;"
+      ],
+      "code": "import java.util.concurrent.ExecutorService;\nimport java.util.concurrent.Executors;\nimport java.util.concurrent.Future;\nimport java.util.concurrent.TimeUnit;\n\npublic class Main {\n  public static void main(String[] args) throws Exception {\n    ExecutorService pool = Executors.newFixedThreadPool(2);\n    try {\n      Future<Integer> result = pool.submit(() -> 21 * 2);\n      int value = result.get(2, TimeUnit.SECONDS);\n      assert value == 42;\n    } finally {\n      pool.shutdown();\n      if (!pool.awaitTermination(2, TimeUnit.SECONDS)) pool.shutdownNow();\n    }\n  }\n}\n",
+      "pitfall": "Timeout de get não cancela a tarefa. shutdownNow apenas tenta interromper; tarefas precisam cooperar. newFixedThreadPool usa fila sem limite, então planeje admissão em produção.",
+      "memory": "Submit agenda; Future acompanha; get espera; shutdown encerra a entrada.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/concurrent/ExecutorService.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-completablefuture-compose",
+      "title": "CompletableFuture: thenApply e thenCompose",
+      "category": "Concorrência",
+      "level": "Intermediário",
+      "question": "Transforme um resultado e encadeie outra operação que já devolve CompletableFuture, sem criar Future de Future.",
+      "answer": "thenApply transforma T em U. thenCompose encadeia função de T para CompletionStage<U> e devolve um estágio de U.",
+      "imports": [
+        "import java.util.concurrent.CompletableFuture;"
+      ],
+      "code": "import java.util.concurrent.CompletableFuture;\n\npublic class Main {\n  static CompletableFuture<Integer> doubled(int value) {\n    return CompletableFuture.completedFuture(value * 2);\n  }\n  public static void main(String[] args) {\n    CompletableFuture<Integer> total = CompletableFuture.completedFuture(20)\n        .thenApply(value -> value + 1)\n        .thenCompose(value -> doubled(value));\n    assert total.join() == 42;\n  }\n}\n",
+      "pitfall": "Encadear não garante execução em outra thread. Variantes Async sem executor explícito normalmente usam o commonPool; defina executor para tarefas bloqueantes.",
+      "memory": "Apply transforma valor; Compose abre o próximo estágio.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/concurrent/CompletableFuture.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-completablefuture-errors",
+      "title": "CompletableFuture: exceptionally e handle",
+      "category": "Concorrência",
+      "level": "Staff",
+      "question": "Recupere uma falha explícita e use handle para observar tanto sucesso quanto erro.",
+      "answer": "exceptionally calcula um resultado quando há falha. handle recebe resultado e erro e transforma o desfecho de sucesso ou falha.",
+      "imports": [
+        "import java.util.concurrent.CompletableFuture;"
+      ],
+      "code": "import java.util.concurrent.CompletableFuture;\n\npublic class Main {\n  public static void main(String[] args) {\n    CompletableFuture<Integer> failed = CompletableFuture.failedFuture(\n        new IllegalStateException(\"unavailable\"));\n    int fallback = failed.exceptionally(error -> -1).join();\n    String outcome = failed.handle((value, error) ->\n        error == null ? \"ok:\" + value : \"failed\").join();\n    assert fallback == -1;\n    assert outcome.equals(\"failed\");\n    assert failed.isCompletedExceptionally();\n  }\n}\n",
+      "pitfall": "Fallback indiscriminado pode esconder falha de negócio. Timeout/cancelamento do estágio não garante interrupção da operação externa subjacente.",
+      "memory": "Exceptionally cuida da falha; handle recebe os dois caminhos.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/concurrent/CompletableFuture.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-synchronized-invariant",
+      "title": "synchronized: proteger uma regra composta",
+      "category": "Concorrência",
+      "level": "Staff",
+      "question": "Faça duas threads disputarem um saldo de 100 tentando retirar 80; somente uma deve conseguir.",
+      "answer": "synchronized usa um monitor. Conferir e atualizar precisam acontecer sob o mesmo lock; todos os acessos concorrentes ao estado protegido devem obedecer à disciplina.",
+      "imports": [],
+      "code": "public class Main {\n  static final class Account {\n    private int balance = 100;\n    synchronized boolean withdraw(int amount) {\n      if (amount <= 0) throw new IllegalArgumentException(\"amount\");\n      if (balance < amount) return false;\n      balance -= amount;\n      return true;\n    }\n    synchronized int balance() { return balance; }\n  }\n  public static void main(String[] args) throws InterruptedException {\n    Account account = new Account();\n    Thread first = new Thread(() -> account.withdraw(80));\n    Thread second = new Thread(() -> account.withdraw(80));\n    first.start();\n    second.start();\n    first.join();\n    second.join();\n    assert account.balance() == 20;\n  }\n}\n",
+      "pitfall": "O monitor só coordena threads que usam o mesmo objeto na mesma JVM. Não é transação entre serviços nem proteção compartilhada entre várias instâncias.",
+      "memory": "Mesmo estado, mesmo lock, toda a regra dentro.",
+      "sourceUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-14.html#jls-14.19",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-atomicinteger",
+      "title": "AtomicInteger: incremento e compareAndSet",
+      "category": "Concorrência",
+      "level": "Staff",
+      "question": "Incremente um contador em duas threads e faça uma troca condicional do valor final.",
+      "answer": "incrementAndGet altera e devolve o novo valor atomicamente. compareAndSet troca somente se o valor observado corresponder ao esperado.",
+      "imports": [
+        "import java.util.concurrent.atomic.AtomicInteger;"
+      ],
+      "code": "import java.util.concurrent.atomic.AtomicInteger;\n\npublic class Main {\n  public static void main(String[] args) throws InterruptedException {\n    AtomicInteger count = new AtomicInteger();\n    Runnable work = () -> {\n      for (int i = 0; i < 1000; i++) count.incrementAndGet();\n    };\n    Thread first = new Thread(work);\n    Thread second = new Thread(work);\n    first.start(); second.start();\n    first.join(); second.join();\n    assert count.get() == 2000;\n    boolean changed = count.compareAndSet(2000, 0);\n    assert changed && count.get() == 0;\n  }\n}\n",
+      "pitfall": "get seguido de set não forma uma operação atômica composta. Vários AtomicInteger não tornam uma transferência entre contas atômica. Funções de update podem ser reaplicadas.",
+      "memory": "Atomic protege uma atualização; invariante com vários valores exige desenho próprio.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/concurrent/atomic/AtomicInteger.html",
+      "validation": "Compilado e executado com Java 17"
+    },
+    {
+      "id": "ja-concurrenthashmap",
+      "title": "ConcurrentHashMap: merge atômico por chave",
+      "category": "Concorrência",
+      "level": "Staff",
+      "question": "Conte 2.000 ocorrências na mesma chave a partir de duas threads sem perder incrementos.",
+      "answer": "ConcurrentHashMap oferece operações concorrentes. merge realiza a combinação de uma chave atomicamente; isso evita o par inseguro get seguido de put.",
+      "imports": [
+        "import java.util.concurrent.ConcurrentHashMap;"
+      ],
+      "code": "import java.util.concurrent.ConcurrentHashMap;\n\npublic class Main {\n  public static void main(String[] args) throws InterruptedException {\n    var counts = new ConcurrentHashMap<String, Integer>();\n    Runnable work = () -> {\n      for (int i = 0; i < 1000; i++) counts.merge(\"paid\", 1, Integer::sum);\n    };\n    Thread first = new Thread(work);\n    Thread second = new Thread(work);\n    first.start(); second.start();\n    first.join(); second.join();\n    assert counts.get(\"paid\") == 2000;\n    assert counts.get(\"missing\") == null;\n  }\n}\n",
+      "pitfall": "Não aceita chaves nem valores null. Atomicidade de uma chave não é transação entre contas. Valores mutáveis armazenados ainda precisam de sincronização própria.",
+      "memory": "Mapa concorrente: operação por chave. Workflow financeiro: outra fronteira de consistência.",
+      "sourceUrl": "https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/concurrent/ConcurrentHashMap.html",
+      "validation": "Compilado e executado com Java 17"
+    }
+  ]
+}

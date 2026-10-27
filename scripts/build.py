@@ -11,7 +11,7 @@ DATA_DIR = ROOT / 'data'
 DATA_DIR.mkdir(exist_ok=True)
 OUT.mkdir(exist_ok=True)
 data = {}
-for name in ('research', 'curriculum', 'simulations', 'syntax'):
+for name in ('research', 'curriculum', 'simulations', 'syntax', 'java'):
     data[name] = json.loads((DATA_DIR / f'{name}.json').read_text())
 
 cases = data['simulations']
@@ -42,12 +42,18 @@ for drill in syntax['drills']:
     keys = {s['key'] for s in drill['slots']}
     assert placeholders == keys, drill['id']
     assert all(s['answers'] for s in drill['slots']), drill['id']
+java = data['java']
+assert len(java['cards']) >= 56
+assert len({c['id'] for c in java['cards']}) == len(java['cards'])
+for card in java['cards']:
+    assert all(card.get(k) for k in ('id', 'title', 'category', 'question', 'answer', 'code', 'memory', 'pitfall', 'sourceUrl', 'validation'))
+    assert 'public class Main' in card['code']
 sources = {s['id'] for s in data['research']['sources']}
 for f in data['research']['findings'] + data['research']['process']:
     assert set(f.get('sourceIds', [])) <= sources
 
 payload = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\/')
-html = (ROOT / 'src' / 'shell.html').read_text().replace('/*__CSS__*/', (ROOT / 'src' / 'style.css').read_text()).replace('/*__JS__*/', (ROOT / 'src' / 'app.js').read_text()).replace('__DATA__', payload)
+html = (ROOT / 'src' / 'shell.html').read_text().replace('/*__CSS__*/', (ROOT / 'src' / 'style.css').read_text()).replace('/*__JS__*/', (ROOT / 'src' / 'java.js').read_text()+'\n'+(ROOT / 'src' / 'app.js').read_text()).replace('__DATA__', payload)
 assert not re.search(r'__(?:CSS|JS|DATA)__', html)
 (ROOT / 'index.html').write_text(html)
 
@@ -65,4 +71,8 @@ with zipfile.ZipFile(OUT / 'codigos-e-receitas.zip', 'w', zipfile.ZIP_DEFLATED) 
         archive.writestr(f'{folder}/contexto.json', json.dumps({k: v for k, v in lab.items() if k != 'code'}, ensure_ascii=False, indent=2))
     for n, recipe in enumerate(syntax['recipes'], 1):
         archive.writestr(f'receitas/{n:02d}-{recipe["id"]}.txt', recipe['title']+'\n\n'+str(recipe['context'])+'\n\n'+recipe['code']+'\n\nReferência: '+recipe['sourceUrl'])
-print(json.dumps({'html_bytes': len(html.encode()), 'modules': len(curriculum['modules']), 'lessons': sum(len(x['lessons']) for x in curriculum['modules']), 'simulations': len(cases), 'rounds': sum(len(x['rounds']) for x in cases), 'labs': len(curriculum['codeLabs']), 'drills': len(syntax['drills']), 'recipes': len(syntax['recipes']), 'flashcards': len(curriculum['flashcards']) + sum(len(x.get('flashcards', [])) for x in cases), 'sources': len(sources)}, ensure_ascii=False))
+    for card in java['cards']:
+        folder = 'java-de-cabeca/' + card['id']
+        archive.writestr(folder + '/Main.java', card['code'])
+        archive.writestr(folder + '/COMO-RODAR.txt', card['title'] + '\n\n' + card['question'] + '\n\njavac --release 17 Main.java\njava -ea Main\n\n' + card['validation'] + '\n\n' + card['sourceUrl'])
+print(json.dumps({'html_bytes': len(html.encode()), 'modules': len(curriculum['modules']), 'lessons': sum(len(x['lessons']) for x in curriculum['modules']), 'simulations': len(cases), 'rounds': sum(len(x['rounds']) for x in cases), 'labs': len(curriculum['codeLabs']), 'drills': len(syntax['drills']), 'recipes': len(syntax['recipes']), 'flashcards': len(java['cards']) + len(curriculum['flashcards']) + sum(len(x.get('flashcards', [])) for x in cases), 'java_cards': len(java['cards']), 'sources': len(sources)}, ensure_ascii=False))
